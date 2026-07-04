@@ -1,0 +1,28 @@
+{
+  "$schema": "../profile.schema.json",
+  "dots": { "type": "square", "color": "#222222" },
+  "cornersSquare": {
+    "type": "extra-rounded",
+    "gradient": {
+      "type": "linear",
+      "rotation": 0.79,
+      "colorStops": [
+        { "offset": 0, "color": "#11998E" },
+        { "offset": 1, "color": "#38EF7D" }
+      ]
+    }
+  },
+  "cornersDot": {
+    "type": "dot",
+    "gradient": {
+      "type": "linear",
+      "rotation": 0.79,
+      "colorStops": [
+        { "offset": 0, "color": "#11998E" },
+        { "offset": 1, "color": "#38EF7D" }
+      ]
+    }
+  },
+  "background": { "color": "#FFFFFF" },
+  "output": "./output/"
+}

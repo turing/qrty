@@ -24,8 +24,8 @@ const names = readdirSync(BUNDLED)
 // so this throws if any bundled profile is invalid or unreadable.
 const profiles: Profile[] = names.map((n) => loadProfile(n, BUNDLED));
 
-test("ships between 1 and 10 profiles", () => {
-  assert.ok(names.length > 0 && names.length <= 10);
+test("ships a reasonable number of profiles", () => {
+  assert.ok(names.length > 0 && names.length <= 16);
 });
 
 test("black and white are shipped", () => {
@@ -46,6 +46,31 @@ test("the set covers every dot type", () => {
 
 test("a gradient profile is shipped", () => {
   assert.ok(profiles.some((p) => p.dots.gradient));
+});
+
+test("a radial gradient is exercised", () => {
+  const anyRadial = profiles.some((p) =>
+    [p.dots.gradient, p.cornersSquare?.gradient, p.cornersDot?.gradient, p.background?.gradient]
+      .some((g) => g?.type === "radial"),
+  );
+  assert.ok(anyRadial);
+});
+
+test("a corner (finder) gradient is exercised", () => {
+  assert.ok(profiles.some((p) => p.cornersSquare?.gradient || p.cornersDot?.gradient));
+});
+
+test("a background gradient is exercised", () => {
+  assert.ok(profiles.some((p) => p.background?.gradient));
+});
+
+test("a circle-shaped code is exercised", () => {
+  assert.ok(profiles.some((p) => p.shape === "circle"));
+});
+
+test("quiet-zone margin varies across profiles", () => {
+  const margins = new Set(profiles.map((p) => p.margin ?? 0));
+  assert.ok(margins.size >= 2, "expected at least two distinct margin values");
 });
 
 test("a transparent profile is shipped", () => {

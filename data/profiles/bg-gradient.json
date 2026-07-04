@@ -1,0 +1,18 @@
+{
+  "$schema": "../profile.schema.json",
+  "dots": { "type": "rounded", "color": "#FFFFFF" },
+  "cornersSquare": { "type": "extra-rounded", "color": "#FFFFFF" },
+  "cornersDot": { "type": "dot", "color": "#FFFFFF" },
+  "background": {
+    "gradient": {
+      "type": "linear",
+      "rotation": 0.79,
+      "colorStops": [
+        { "offset": 0, "color": "#141E30" },
+        { "offset": 1, "color": "#243B55" }
+      ]
+    }
+  },
+  "margin": 16,
+  "output": "./output/"
+}
