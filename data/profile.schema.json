@@ -8,6 +8,7 @@
     "$schema": { "type": "string" },
     "dots": {
       "description": "Data module styling",
+      "type": "object",
       "$ref": "#/$defs/styleBlock",
       "properties": {
         "type": { "$ref": "#/$defs/dotType" }
@@ -16,6 +17,7 @@
     },
     "cornersSquare": {
       "description": "Outer finder-pattern (registration mark) styling",
+      "type": "object",
       "$ref": "#/$defs/styleBlock",
       "properties": {
         "type": { "$ref": "#/$defs/cornerSquareType" }
@@ -23,6 +25,7 @@
     },
     "cornersDot": {
       "description": "Inner finder-pattern dot styling",
+      "type": "object",
       "$ref": "#/$defs/styleBlock",
       "properties": {
         "type": { "$ref": "#/$defs/cornerDotType" }
