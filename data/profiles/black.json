@@ -1,0 +1,9 @@
+{
+  "$schema": "../profile.schema.json",
+  "dots": { "type": "rounded", "color": "#FFFFFF" },
+  "cornersSquare": { "type": "extra-rounded", "color": "#FFFFFF" },
+  "cornersDot": { "type": "dot", "color": "#FFFFFF" },
+  "background": { "color": "#000000" },
+  "errorCorrectionLevel": "H",
+  "output": "./output/"
+}
