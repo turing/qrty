@@ -99,21 +99,27 @@ color equals a foreground color is rejected as unreadable.
 
 ### Bundled profiles
 
-First run installs ten starters covering every dot style plus a gradient and a
-transparent one:
+First run installs the starter set below — covering every dot and finder style,
+linear/radial gradients, corner and background gradients, a circular code, and
+transparency:
 
-| name           | look                                           |
-|----------------|------------------------------------------------|
-| black          | white rounded modules, rounded finders, on black |
-| white          | black rounded modules on white                 |
-| square         | classic black squares on white                 |
-| dots           | circular dots on white                         |
-| classy         | classy modules on white                        |
-| classy-rounded | classy-rounded modules on white                |
-| extra-rounded  | extra-rounded modules on white                 |
-| ocean          | blue gradient, rounded finders, on white       |
-| ghost          | black rounded modules, transparent background  |
-| forest         | pale green modules on deep green               |
+| name            | look                                             |
+|-----------------|--------------------------------------------------|
+| black           | white rounded modules, rounded finders, on black |
+| white           | black rounded modules on white                   |
+| square          | classic black squares on white                   |
+| dots            | circular dots on white                           |
+| classy          | classy modules on white                          |
+| classy-rounded  | classy-rounded modules on white                  |
+| extra-rounded   | extra-rounded modules on white                   |
+| ocean           | blue linear gradient, rounded finders, on white  |
+| forest          | pale green modules on deep green                 |
+| ghost           | black rounded modules, transparent background    |
+| linear          | red linear gradient on the dots                  |
+| radial          | purple→red radial gradient on the dots           |
+| corner-gradient | green gradient finders, dark square dots         |
+| bg-gradient     | white modules on a dark gradient background       |
+| circle          | circular code outline, black rounded modules      |
 
 ## PNG output
 
