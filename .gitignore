@@ -1,0 +1,11 @@
+node_modules/
+dist/
+output/
+*.tgz
+.DS_Store
+
+# Python (v1, tagged v0.1.0-python)
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.venv/

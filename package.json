@@ -1,0 +1,40 @@
+{
+  "name": "qrgen",
+  "version": "2.0.0",
+  "description": "Render styled SVG (and optional PNG) QR codes from named JSON style profiles.",
+  "type": "module",
+  "bin": {
+    "qrgen": "src/cli.ts"
+  },
+  "files": [
+    "src",
+    "data"
+  ],
+  "engines": {
+    "node": ">=23.6.0"
+  },
+  "scripts": {
+    "test": "node --test 'src/**/*.test.ts'",
+    "typecheck": "tsc",
+    "qrgen": "node src/cli.ts"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "commander": "^12.1.0",
+    "jsdom": "^29.1.1",
+    "qr-code-styling": "^1.9.2",
+    "tldts": "^6.1.0"
+  },
+  "optionalDependencies": {
+    "canvas": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  },
+  "allowScripts": {
+    "canvas@3.2.3": true
+  }
+}
