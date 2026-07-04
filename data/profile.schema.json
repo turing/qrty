@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/qrgen/profile.schema.json",
+  "title": "qrgen style profile",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "dots": {
+      "description": "Data module styling",
+      "$ref": "#/$defs/styleBlock",
+      "properties": {
+        "type": { "$ref": "#/$defs/dotType" }
+      },
+      "required": ["type"]
+    },
+    "cornersSquare": {
+      "description": "Outer finder-pattern (registration mark) styling",
+      "$ref": "#/$defs/styleBlock",
+      "properties": {
+        "type": { "$ref": "#/$defs/cornerSquareType" }
+      }
+    },
+    "cornersDot": {
+      "description": "Inner finder-pattern dot styling",
+      "$ref": "#/$defs/styleBlock",
+      "properties": {
+        "type": { "$ref": "#/$defs/cornerDotType" }
+      }
+    },
+    "background": {
+      "description": "Background; omit entirely for transparent",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "color": { "$ref": "#/$defs/hexColor" },
+        "gradient": { "$ref": "#/$defs/gradient" }
+      }
+    },
+    "image": {
+      "description": "Center logo (file path or data URI)",
+      "type": "string"
+    },
+    "imageOptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "imageSize": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "margin": { "type": "number", "minimum": 0 },
+        "hideBackgroundDots": { "type": "boolean" }
+      }
+    },
+    "errorCorrectionLevel": { "enum": ["L", "M", "Q", "H"] },
+    "margin": { "type": "integer", "minimum": 0 },
+    "shape": { "enum": ["square", "circle"] },
+    "size": { "type": "integer", "minimum": 1 },
+    "output": { "type": "string" }
+  },
+  "required": ["dots"],
+  "$defs": {
+    "dotType": {
+      "enum": ["square", "rounded", "dots", "classy", "classy-rounded", "extra-rounded"]
+    },
+    "cornerSquareType": {
+      "enum": ["square", "dot", "extra-rounded"]
+    },
+    "cornerDotType": {
+      "enum": ["square", "dot"]
+    },
+    "hexColor": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$"
+    },
+    "gradient": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": { "enum": ["linear", "radial"] },
+        "rotation": { "type": "number" },
+        "colorStops": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "offset": { "type": "number", "minimum": 0, "maximum": 1 },
+              "color": { "type": "string" }
+            },
+            "required": ["offset", "color"]
+          }
+        }
+      },
+      "required": ["colorStops"]
+    },
+    "styleBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {},
+        "color": { "$ref": "#/$defs/hexColor" },
+        "gradient": { "$ref": "#/$defs/gradient" }
+      }
+    }
+  }
+}
