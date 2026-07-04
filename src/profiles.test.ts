@@ -72,3 +72,18 @@ test("contrast check is case-insensitive", () => {
   });
   assert.throws(() => loadProfile("invisible2", d), /unreadable/i);
 });
+
+test("white dots with omitted background rejected (effective white)", () => {
+  const d = tmp();
+  write(d, "whiteonwhite", { dots: { type: "rounded", color: "#FFFFFF" } });
+  assert.throws(() => loadProfile("whiteonwhite", d), /unreadable/i);
+});
+
+test("transparent background never conflicts with a foreground", () => {
+  const d = tmp();
+  write(d, "clear", {
+    dots: { type: "rounded", color: "#000000" },
+    background: { color: "transparent" },
+  });
+  assert.equal(loadProfile("clear", d).background?.color, "transparent");
+});

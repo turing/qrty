@@ -48,8 +48,12 @@ const ajv = new Ajv2020({ allErrors: true });
 const validate = ajv.compile(schema);
 
 function assertReadableContrast(profile: Profile, where: string): void {
-  const bg = profile.background?.color?.toLowerCase();
-  if (!bg) return; // transparent or gradient background: skip
+  // A gradient background has no single color to compare; skip it.
+  if (profile.background && !profile.background.color) return;
+  // qr-code-styling defaults an omitted background to white, so an omitted
+  // background is effectively white for contrast purposes.
+  const bg = (profile.background?.color ?? "#ffffff").toLowerCase();
+  if (bg === "transparent") return;
   const foregrounds = [
     profile.dots?.color,
     profile.cornersSquare?.color,

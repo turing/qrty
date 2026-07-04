@@ -29,11 +29,11 @@
       }
     },
     "background": {
-      "description": "Background; omit entirely for transparent",
+      "description": "Background; use color \"transparent\" for none (omitting defaults to white)",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "color": { "$ref": "#/$defs/hexColor" },
+        "color": { "$ref": "#/$defs/backgroundColor" },
         "gradient": { "$ref": "#/$defs/gradient" }
       }
     },
@@ -70,6 +70,10 @@
     "hexColor": {
       "type": "string",
       "pattern": "^#[0-9A-Fa-f]{6}$"
+    },
+    "backgroundColor": {
+      "type": "string",
+      "pattern": "^(#[0-9A-Fa-f]{6}|transparent)$"
     },
     "gradient": {
       "type": "object",
