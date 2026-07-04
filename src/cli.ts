@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { mkdirSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { Command, CommanderError } from "commander";
@@ -49,12 +49,12 @@ export async function generate(opts: GenerateOptions): Promise<string[]> {
   const written: string[] = [];
   const svgPath = join(dir, `${stem}.svg`);
   writeFileSync(svgPath, await renderSvg(profile, opts.url, opts.size));
-  written.push(svgPath);
+  written.push(resolve(svgPath));
 
   if (opts.png) {
     const pngPath = join(dir, `${stem}.png`);
     writeFileSync(pngPath, await renderPng(profile, opts.url, opts.size));
-    written.push(pngPath);
+    written.push(resolve(pngPath));
   }
   return written;
 }
