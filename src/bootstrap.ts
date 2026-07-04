@@ -1,9 +1,4 @@
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readdirSync,
-} from "node:fs";
+import { copyFileSync, mkdirSync, readdirSync } from "node:fs";
 import { createInterface } from "node:readline/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -45,38 +40,44 @@ export interface EnsureOptions {
   stream?: { write: (s: string) => void };
 }
 
+function hasProfiles(dir: string): boolean {
+  try {
+    return readdirSync(dir).some((f) => f.endsWith(".json"));
+  } catch {
+    return false; // directory absent
+  }
+}
+
 /**
- * Ensure the profiles directory exists, offering to create it on first run.
- * No-op if present. Interactive: prompt (default yes) then seed. Non-interactive:
- * throw with guidance rather than hang. Throws if the user declines.
+ * Ensure the profiles directory holds at least one profile, offering to seed the
+ * starters otherwise. Triggers when the directory is absent OR present-but-empty.
+ * No-op if profiles already exist. Interactive: prompt (default yes) then seed.
+ * Non-interactive: throw with guidance rather than hang. Throws if declined.
  */
 export async function ensureProfilesDir(
   profilesDir: string = PROFILES_DIR,
   opts: EnsureOptions = { interactive: process.stdin.isTTY ?? false },
 ): Promise<void> {
-  if (existsSync(profilesDir)) return;
+  if (hasProfiles(profilesDir)) return;
 
   if (!opts.interactive) {
     throw new QrgenError(
-      `No profiles directory at ${profilesDir}. Run qrgen in a terminal once ` +
-        `to create it, or create the directory and add a <profile>.json.`,
+      `No profiles found in ${profilesDir}. Run qrgen in a terminal once to ` +
+        `seed the starter profiles, or add a <profile>.json.`,
     );
   }
 
   const confirm = opts.confirm ?? defaultConfirm;
   const ok = await confirm(
-    `No profiles directory at ${profilesDir}. ` +
-      `Create it and install the starter profiles? [Y/n] `,
+    `No profiles found in ${profilesDir}. Install the starter profiles? [Y/n] `,
   );
   if (!ok) {
-    throw new QrgenError(
-      `No profiles directory at ${profilesDir}; nothing to do.`,
-    );
+    throw new QrgenError(`No profiles in ${profilesDir}; nothing to do.`);
   }
 
   const installed = installStarterProfiles(profilesDir);
   const stream = opts.stream ?? process.stderr;
-  stream.write(`Created ${profilesDir}\n`);
+  stream.write(`Seeded ${profilesDir}\n`);
   for (const file of installed) {
     stream.write(`  installed profile: ${file}\n`);
   }

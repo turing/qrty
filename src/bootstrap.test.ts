@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, existsSync } from "node:fs";
+import { mkdtempSync, mkdirSync, existsSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -22,13 +22,14 @@ test("installStarterProfiles copies profiles and schema to the parent", () => {
   assert.ok(existsSync(join(home, "profile.schema.json")));
 });
 
-test("ensure is a no-op when the directory exists", async () => {
+test("ensure is a no-op when profiles already exist", async () => {
   const dir = join(tmp(), "profiles");
   mkdirSync(dir);
+  writeFileSync(join(dir, "mine.json"), "{}");
   await ensureProfilesDir(dir, {
     interactive: true,
     confirm: () => {
-      throw new Error("confirm must not be called when dir exists");
+      throw new Error("confirm must not be called when profiles exist");
     },
     stream: nullStream,
   });
@@ -38,7 +39,27 @@ test("non-interactive missing dir throws instead of hanging", async () => {
   const dir = join(tmp(), "profiles");
   await assert.rejects(
     () => ensureProfilesDir(dir, { interactive: false, stream: nullStream }),
-    /No profiles directory/,
+    /No profiles found/,
+  );
+});
+
+test("present-but-empty dir offers to seed and seeds on yes", async () => {
+  const dir = join(tmp(), "profiles");
+  mkdirSync(dir); // exists, but holds no .json profiles
+  await ensureProfilesDir(dir, {
+    interactive: true,
+    confirm: () => true,
+    stream: nullStream,
+  });
+  assert.ok(existsSync(join(dir, "black.json")));
+});
+
+test("present-but-empty dir throws non-interactively", async () => {
+  const dir = join(tmp(), "profiles");
+  mkdirSync(dir);
+  await assert.rejects(
+    () => ensureProfilesDir(dir, { interactive: false, stream: nullStream }),
+    /No profiles found/,
   );
 });
 
