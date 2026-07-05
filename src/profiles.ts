@@ -48,6 +48,8 @@ export interface Profile {
   margin?: number;
   shape?: "square" | "circle";
   size?: number;
+  /** Default color for a `--label` caption (falls back to the dots color). */
+  labelColor?: string;
   output?: string;
 }
 
