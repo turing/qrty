@@ -24,6 +24,8 @@ export function installStarterProfiles(profilesDir: string): string[] {
     join(DATA, "profile.schema.json"),
     join(dirname(profilesDir), "profile.schema.json"),
   );
+  // Placeholder logo the bundled `logo` profile references via ~/.qrgen/logo.svg.
+  copyFileSync(join(DATA, "logo.svg"), join(dirname(profilesDir), "logo.svg"));
   return installed.sort();
 }
 

@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9,14 +8,11 @@ import { Command, CommanderError } from "commander";
 import { ensureProfilesDir } from "./bootstrap.ts";
 import { QrgenError } from "./errors.ts";
 import { deriveStem } from "./naming.ts";
+import { expandHome } from "./paths.ts";
 import { loadProfile, PROFILES_DIR, type Profile } from "./profiles.ts";
 import { renderPng, renderSvg } from "./render.ts";
 
-export function expandHome(p: string): string {
-  if (p === "~") return homedir();
-  if (p.startsWith("~/")) return join(homedir(), p.slice(2));
-  return p;
-}
+export { expandHome };
 
 export function resolveOutputDir(
   flag: string | undefined,
