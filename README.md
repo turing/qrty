@@ -183,6 +183,21 @@ as `--png` — and errors clearly if it is missing. Keep the logo small and use
 The bundled `sample` profile fetches a remote SVG icon. Bundled sample images
 live in `~/.qrgen/assets/default/` for your own profiles to reference.
 
+### Remote asset cache
+
+Every remote image — auto icons (including recolored Simple Icons variants) and
+`http(s)` profile `image` URLs — is cached under `~/.qrgen/cache/`, keyed by the
+exact fetched URL. Each URL downloads once, then serves from disk: faster,
+offline after the first fetch, and no rate-limiting the icon sources on every
+render. Only genuine `2xx` image responses are cached — an HTML gate returned
+with HTTP 200 (some CDNs do this) is rejected, never stored. There is no expiry;
+icon URLs are static.
+
+    qrgen cache path     # print the cache directory
+    qrgen cache clear    # empty it (reports assets removed + bytes freed)
+
+(Label fonts keep their own cache at `~/.qrgen/fonts/`.)
+
 ## PNG output
 
 The `--png` flag renders a PNG through qr-code-styling's canvas backend, which

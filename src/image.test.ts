@@ -33,13 +33,14 @@ test("data URI passes through (svg not raster, png raster)", async () => {
 });
 
 test("http url is fetched and inlined; svg content-type is not raster", async () => {
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-img-cache-"));
   const orig = globalThis.fetch;
   globalThis.fetch = (async () =>
     new Response("<svg/>", {
       headers: { "content-type": "image/svg+xml" },
     })) as typeof fetch;
   try {
-    const r = await resolveImage("https://example.com/icon.svg");
+    const r = await resolveImage("https://example.com/icon.svg", { cacheDir });
     assert.ok(r.image.startsWith("data:image/svg+xml;base64,"));
     assert.equal(r.isRaster, false);
   } finally {
@@ -48,12 +49,13 @@ test("http url is fetched and inlined; svg content-type is not raster", async ()
 });
 
 test("http url failure throws QrgenError", async () => {
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-img-cache-"));
   const orig = globalThis.fetch;
   globalThis.fetch = (async () =>
     new Response("nope", { status: 404 })) as typeof fetch;
   try {
     await assert.rejects(
-      () => resolveImage("https://example.com/missing.svg"),
+      () => resolveImage("https://example.com/missing.svg", { cacheDir }),
       /Could not fetch/,
     );
   } finally {
