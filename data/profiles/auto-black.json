@@ -5,6 +5,7 @@
   "cornersDot": { "type": "dot", "color": "#FFFFFF" },
   "background": { "color": "#000000" },
   "autoIcon": true,
+  "recolorIcon": true,
   "imageOptions": { "imageSize": 0.28, "margin": 6, "hideBackgroundDots": true },
   "errorCorrectionLevel": "H",
   "labelColor": "#FFFFFF",

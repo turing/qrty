@@ -8,6 +8,7 @@ import { QrgenError } from "./errors.ts";
 import { resolveAutoIconUrl } from "./icons.ts";
 import { resolveImage } from "./image.ts";
 import type { Profile } from "./profiles.ts";
+import { recolorSvgDataUri } from "./recolor.ts";
 
 // qr-code-styling is CJS with an ESM .d.ts whose default export TypeScript
 // mis-resolves under NodeNext. Load the class via require and describe the
@@ -66,8 +67,25 @@ async function toOptions(
   const imageSource =
     profile.image ?? (profile.autoIcon ? resolveAutoIconUrl(url) : null);
   if (imageSource) {
-    const { image, isRaster } = await resolveImage(imageSource);
-    options.image = image;
+    // recolorIcon paints the logo the QR's foreground color.
+    const recolor = profile.recolorIcon
+      ? profile.dots.color ??
+        profile.cornersSquare?.color ??
+        profile.labelColor ??
+        "#000000"
+      : null;
+    const isSimpleIcons = imageSource.startsWith("https://cdn.simpleicons.org/");
+    const src =
+      recolor && isSimpleIcons
+        ? `${imageSource.replace(/\/+$/, "")}/${recolor.replace(/^#/, "")}`
+        : imageSource;
+
+    const { image, isRaster } = await resolveImage(src);
+    // Simple Icons recolor via the URL above; other SVGs via our filter.
+    options.image =
+      recolor && !isRaster && !isSimpleIcons
+        ? recolorSvgDataUri(image, recolor)
+        : image;
     if (profile.imageOptions) options.imageOptions = profile.imageOptions;
     if (isRaster) needsCanvas = true; // raster logos must be sized via canvas
   }

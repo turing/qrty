@@ -48,6 +48,10 @@
       "description": "Auto-select a logo from the encoded URL's domain",
       "type": "boolean"
     },
+    "recolorIcon": {
+      "description": "Recolor the logo to the QR's foreground color",
+      "type": "boolean"
+    },
     "imageOptions": {
       "type": "object",
       "additionalProperties": false,
