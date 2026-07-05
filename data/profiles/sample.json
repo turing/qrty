@@ -4,7 +4,7 @@
   "cornersSquare": { "type": "extra-rounded", "color": "#000000" },
   "cornersDot": { "type": "dot", "color": "#000000" },
   "background": { "color": "#FFFFFF" },
-  "image": "~/.qrgen/logo.svg",
+  "image": "https://raw.githubusercontent.com/xandemon/developer-icons/refs/heads/main/icons/bash.svg",
   "imageOptions": { "imageSize": 0.28, "margin": 6, "hideBackgroundDots": true },
   "errorCorrectionLevel": "H",
   "output": "./"

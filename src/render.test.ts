@@ -46,6 +46,23 @@ test("embeds an svg logo without needing canvas", async () => {
   assert.match(svg, /<image /);
 });
 
+test("embeds a viewBox-only svg logo by injecting dimensions", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "qrgen-vb-"));
+  const logo = join(dir, "vb.svg");
+  writeFileSync(
+    logo,
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>" +
+      "<rect width='100' height='100' fill='#c00'/></svg>",
+  );
+  const svg = (
+    await renderSvg(
+      { ...P, image: logo, imageOptions: { imageSize: 0.3, hideBackgroundDots: true } },
+      "https://x.com",
+    )
+  ).toString("utf8");
+  assert.match(svg, /<image /);
+});
+
 test("renders png bytes", { skip: !CANVAS }, async () => {
   const png = await renderPng(P, "https://youtube.com");
   assert.equal(png.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");

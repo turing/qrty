@@ -130,7 +130,7 @@ transparency:
 | corner-gradient | green gradient finders, dark square dots         |
 | bg-gradient     | white modules on a dark gradient background       |
 | circle          | circular code outline, black rounded modules      |
-| logo            | centered placeholder logo (`~/.qrgen/logo.svg`)  |
+| sample          | centered logo fetched from a URL (a bash icon)    |
 
 ### Logos
 
@@ -140,12 +140,16 @@ Set `image` (a file path, `data:` URI, or `http(s)` URL) plus optional
     "image": "~/logos/seal.png",
     "imageOptions": { "imageSize": 0.3, "margin": 6, "hideBackgroundDots": true }
 
-qrgen inlines local files as self-contained `data:` URIs, so the output SVG has
-no external dependency. **An SVG logo needs nothing native.** A **raster** logo
+qrgen resolves every image to a self-contained `data:` URI — local files are
+read, remote URLs are fetched — because qr-code-styling can load neither
+directly in Node. SVG icons that ship only a `viewBox` get width/height injected
+so they size correctly. **An SVG logo needs nothing native.** A **raster** logo
 (PNG/JPG/WebP/GIF) needs the `canvas` package (to size it) — the same dependency
 as `--png` — and errors clearly if it is missing. Keep the logo small and use
-`errorCorrectionLevel: "H"` so the code still scans. The bundled `logo` profile
-points at `~/.qrgen/logo.svg` (seeded on first run); copy it to make your own.
+`errorCorrectionLevel: "H"` so the code still scans.
+
+The bundled `sample` profile fetches a remote SVG icon. Bundled sample images
+live in `~/.qrgen/assets/default/` for your own profiles to reference.
 
 ## PNG output
 
@@ -167,6 +171,14 @@ PNG tests skip automatically when `canvas` is not installed.
 
 Styling and rendering are provided by
 [qr-code-styling](https://github.com/kozakdenys/qr-code-styling) by Denys Kozak.
+
+Bundled sample assets:
+
+- `assets/default/qrgen-sample.jpeg` — a 16th-century ornamental letter Q from
+  Delamotte's *Ornamental Alphabets*, via
+  [fromoldbooks.org](https://www.fromoldbooks.org/Comment/unwatermarked.cgi?source=DelamotteOrnamentalAlphabets;item=051-16th-Century-letter-q-q85-468x500.jpg).
+- The `sample` profile's logo is the bash icon from
+  [xandemon/developer-icons](https://github.com/xandemon/developer-icons).
 
 ## License
 

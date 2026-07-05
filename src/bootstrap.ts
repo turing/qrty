@@ -14,7 +14,9 @@ import { fileURLToPath } from "node:url";
 import { QrgenError } from "./errors.ts";
 import { DEFAULT_DIR } from "./profiles.ts";
 
-const DATA = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const DATA = join(ROOT, "data");
+const ASSETS = join(ROOT, "assets");
 
 /**
  * Seed the bundled starter profiles into `defaultDir` (…/profiles/default),
@@ -39,7 +41,14 @@ export function installStarterProfiles(defaultDir: string): string[] {
     join(DATA, "profile.schema.json"),
     join(profilesRoot, "profile.schema.json"),
   );
-  copyFileSync(join(DATA, "logo.svg"), join(qrgenHome, "logo.svg"));
+  // Bundled sample assets -> ~/.qrgen/assets/default/ (available for your own
+  // profiles to reference locally).
+  const assetsSrc = join(ASSETS, "default");
+  const assetsDst = join(qrgenHome, "assets", "default");
+  mkdirSync(assetsDst, { recursive: true });
+  for (const file of readdirSync(assetsSrc)) {
+    copyFileSync(join(assetsSrc, file), join(assetsDst, file));
+  }
   return installed.sort();
 }
 

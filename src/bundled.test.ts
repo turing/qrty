@@ -10,7 +10,15 @@ import { DOT_TYPES } from "./styles.ts";
 
 const DATA = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
 const BUNDLED = join(DATA, "profiles");
-const BUNDLED_LOGO = join(DATA, "logo.svg");
+
+// Profiles with a URL/remote image are rendered against this inline SVG so the
+// test stays offline and canvas-free.
+const OFFLINE_IMAGE =
+  "data:image/svg+xml;base64," +
+  Buffer.from(
+    "<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'>" +
+      "<rect width='40' height='40' fill='#000000'/></svg>",
+  ).toString("base64");
 
 const names = readdirSync(BUNDLED)
   .filter((f) => f.endsWith(".json"))
@@ -78,16 +86,15 @@ test("a logo profile is shipped and embeds an image", async () => {
   const withImage = profiles.find((p) => p.image);
   assert.ok(withImage, "expected a bundled profile with an image");
   const svg = (
-    await renderSvg({ ...withImage, image: BUNDLED_LOGO }, "https://x.com")
+    await renderSvg({ ...withImage, image: OFFLINE_IMAGE }, "https://x.com")
   ).toString("utf8");
   assert.match(svg, /<image /);
 });
 
 test("every profile renders to valid svg", async () => {
   for (const [i, p] of profiles.entries()) {
-    // Bundled `image` paths point at ~/.qrgen/logo.svg (seeded at runtime);
-    // render against the in-repo copy here.
-    const prof = p.image ? { ...p, image: BUNDLED_LOGO } : p;
+    // The sample profile's image is a remote URL; render offline here.
+    const prof = p.image ? { ...p, image: OFFLINE_IMAGE } : p;
     const svg = (await renderSvg(prof, "https://example.com/path")).toString("utf8");
     assert.match(svg, /<svg/, `${names[i]} failed to render`);
   }

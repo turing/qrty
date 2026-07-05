@@ -8,7 +8,8 @@
   },
   "files": [
     "src",
-    "data"
+    "data",
+    "assets"
   ],
   "engines": {
     "node": ">=23.6.0"

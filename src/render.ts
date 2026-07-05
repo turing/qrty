@@ -35,12 +35,12 @@ function requireCanvas(): unknown {
   }
 }
 
-function toOptions(
+async function toOptions(
   profile: Profile,
   url: string,
   size: number,
   type: Backend,
-): Partial<Options> {
+): Promise<Partial<Options>> {
   const px = profile.size ?? size;
   const options: Record<string, unknown> = {
     jsdom: JSDOM,
@@ -61,7 +61,7 @@ function toOptions(
 
   let needsCanvas = type === "canvas"; // PNG output always needs canvas
   if (profile.image) {
-    const { image, isRaster } = resolveImage(profile.image);
+    const { image, isRaster } = await resolveImage(profile.image);
     options.image = image;
     if (profile.imageOptions) options.imageOptions = profile.imageOptions;
     if (isRaster) needsCanvas = true; // raster logos must be sized via canvas
@@ -76,7 +76,7 @@ export async function renderSvg(
   url: string,
   size: number = DEFAULT_SIZE,
 ): Promise<Buffer> {
-  const qr = new QRCodeStyling(toOptions(profile, url, size, "svg"));
+  const qr = new QRCodeStyling(await toOptions(profile, url, size, "svg"));
   return (await qr.getRawData("svg")) as Buffer;
 }
 
@@ -85,6 +85,6 @@ export async function renderPng(
   url: string,
   size: number = DEFAULT_SIZE,
 ): Promise<Buffer> {
-  const qr = new QRCodeStyling(toOptions(profile, url, size, "canvas"));
+  const qr = new QRCodeStyling(await toOptions(profile, url, size, "canvas"));
   return (await qr.getRawData("png")) as Buffer;
 }

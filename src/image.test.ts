@@ -13,30 +13,59 @@ function tmpFile(name: string, body = "x"): string {
   return p;
 }
 
-test("svg file becomes an svg data URI and is not raster", () => {
+test("svg file becomes an svg data URI and is not raster", async () => {
   const p = tmpFile("logo.svg", "<svg xmlns='http://www.w3.org/2000/svg'/>");
-  const r = resolveImage(p);
+  const r = await resolveImage(p);
   assert.ok(r.image.startsWith("data:image/svg+xml;base64,"));
   assert.equal(r.isRaster, false);
 });
 
-test("png file becomes a png data URI and is raster", () => {
-  const p = tmpFile("logo.png", "\x89PNG");
-  const r = resolveImage(p);
-  assert.ok(r.image.startsWith("data:image/png;base64,"));
+test("jpeg file becomes a jpeg data URI and is raster", async () => {
+  const p = tmpFile("logo.jpeg", "\xff\xd8\xff");
+  const r = await resolveImage(p);
+  assert.ok(r.image.startsWith("data:image/jpeg;base64,"));
   assert.equal(r.isRaster, true);
 });
 
-test("data URI passes through (svg not raster, png raster)", () => {
-  assert.equal(resolveImage("data:image/svg+xml;base64,AAAA").isRaster, false);
-  assert.equal(resolveImage("data:image/png;base64,AAAA").isRaster, true);
+test("data URI passes through (svg not raster, png raster)", async () => {
+  assert.equal((await resolveImage("data:image/svg+xml;base64,AAAA")).isRaster, false);
+  assert.equal((await resolveImage("data:image/png;base64,AAAA")).isRaster, true);
 });
 
-test("missing file throws QrgenError", () => {
-  assert.throws(() => resolveImage("/no/such/logo.svg"), QrgenError);
+test("http url is fetched and inlined; svg content-type is not raster", async () => {
+  const orig = globalThis.fetch;
+  globalThis.fetch = (async () =>
+    new Response("<svg/>", {
+      headers: { "content-type": "image/svg+xml" },
+    })) as typeof fetch;
+  try {
+    const r = await resolveImage("https://example.com/icon.svg");
+    assert.ok(r.image.startsWith("data:image/svg+xml;base64,"));
+    assert.equal(r.isRaster, false);
+  } finally {
+    globalThis.fetch = orig;
+  }
 });
 
-test("unsupported extension throws QrgenError", () => {
+test("http url failure throws QrgenError", async () => {
+  const orig = globalThis.fetch;
+  globalThis.fetch = (async () =>
+    new Response("nope", { status: 404 })) as typeof fetch;
+  try {
+    await assert.rejects(
+      () => resolveImage("https://example.com/missing.svg"),
+      /Could not fetch/,
+    );
+  } finally {
+    globalThis.fetch = orig;
+  }
+});
+
+test("missing file throws QrgenError", async () => {
+  await assert.rejects(() => resolveImage("/no/such/logo.svg"), QrgenError);
+});
+
+test("unsupported extension throws QrgenError", async () => {
   const p = tmpFile("logo.bmp", "x");
-  assert.throws(() => resolveImage(p), /Unsupported/);
+  await assert.rejects(() => resolveImage(p), /Unsupported/);
 });
