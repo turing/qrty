@@ -6,5 +6,5 @@
   "background": { "color": "#FFFFFF" },
   "shape": "circle",
   "margin": 20,
-  "output": "./output/"
+  "output": "./"
 }

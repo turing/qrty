@@ -5,5 +5,5 @@
   "cornersDot": { "type": "dot", "color": "#FFFFFF" },
   "background": { "color": "#000000" },
   "errorCorrectionLevel": "H",
-  "output": "./output/"
+  "output": "./"
 }
