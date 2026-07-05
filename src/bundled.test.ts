@@ -8,12 +8,9 @@ import { loadProfile, type Profile } from "./profiles.ts";
 import { renderSvg } from "./render.ts";
 import { DOT_TYPES } from "./styles.ts";
 
-const BUNDLED = join(
-  dirname(fileURLToPath(import.meta.url)),
-  "..",
-  "data",
-  "profiles",
-);
+const DATA = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
+const BUNDLED = join(DATA, "profiles");
+const BUNDLED_LOGO = join(DATA, "logo.svg");
 
 const names = readdirSync(BUNDLED)
   .filter((f) => f.endsWith(".json"))
@@ -77,9 +74,21 @@ test("a transparent profile is shipped", () => {
   assert.ok(profiles.some((p) => p.background?.color === "transparent"));
 });
 
+test("a logo profile is shipped and embeds an image", async () => {
+  const withImage = profiles.find((p) => p.image);
+  assert.ok(withImage, "expected a bundled profile with an image");
+  const svg = (
+    await renderSvg({ ...withImage, image: BUNDLED_LOGO }, "https://x.com")
+  ).toString("utf8");
+  assert.match(svg, /<image /);
+});
+
 test("every profile renders to valid svg", async () => {
   for (const [i, p] of profiles.entries()) {
-    const svg = (await renderSvg(p, "https://example.com/path")).toString("utf8");
+    // Bundled `image` paths point at ~/.qrgen/logo.svg (seeded at runtime);
+    // render against the in-repo copy here.
+    const prof = p.image ? { ...p, image: BUNDLED_LOGO } : p;
+    const svg = (await renderSvg(prof, "https://example.com/path")).toString("utf8");
     assert.match(svg, /<svg/, `${names[i]} failed to render`);
   }
 });

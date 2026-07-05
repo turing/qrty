@@ -20,6 +20,7 @@ test("installStarterProfiles copies profiles and schema to the parent", () => {
   assert.ok(installed.includes("black.json"));
   assert.ok(existsSync(join(profilesDir, "black.json")));
   assert.ok(existsSync(join(home, "profile.schema.json")));
+  assert.ok(existsSync(join(home, "logo.svg")));
 });
 
 test("ensure is a no-op when profiles already exist", async () => {

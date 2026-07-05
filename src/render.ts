@@ -4,6 +4,7 @@ import { JSDOM } from "jsdom";
 import type { Options } from "qr-code-styling";
 
 import { QrgenError } from "./errors.ts";
+import { resolveImage } from "./image.ts";
 import type { Profile } from "./profiles.ts";
 
 // qr-code-styling is CJS with an ESM .d.ts whose default export TypeScript
@@ -23,12 +24,22 @@ const DEFAULT_SIZE = 300;
 
 type Backend = "svg" | "canvas";
 
+function requireCanvas(): unknown {
+  try {
+    return require("canvas");
+  } catch {
+    throw new QrgenError(
+      "PNG output and raster logos need the 'canvas' package. Install it " +
+        "(npm install canvas) and approve its build script.",
+    );
+  }
+}
+
 function toOptions(
   profile: Profile,
   url: string,
   size: number,
   type: Backend,
-  extra: Record<string, unknown> = {},
 ): Partial<Options> {
   const px = profile.size ?? size;
   const options: Record<string, unknown> = {
@@ -41,17 +52,22 @@ function toOptions(
     shape: profile.shape ?? "square",
     qrOptions: { errorCorrectionLevel: profile.errorCorrectionLevel ?? "Q" },
     dotsOptions: profile.dots,
-    ...extra,
   };
   // Include optional blocks only when present — qr-code-styling reads into
   // them, so passing `undefined` overrides its defaults and crashes.
   if (profile.cornersSquare) options.cornersSquareOptions = profile.cornersSquare;
   if (profile.cornersDot) options.cornersDotOptions = profile.cornersDot;
   if (profile.background) options.backgroundOptions = profile.background;
+
+  let needsCanvas = type === "canvas"; // PNG output always needs canvas
   if (profile.image) {
-    options.image = profile.image;
+    const { image, isRaster } = resolveImage(profile.image);
+    options.image = image;
     if (profile.imageOptions) options.imageOptions = profile.imageOptions;
+    if (isRaster) needsCanvas = true; // raster logos must be sized via canvas
   }
+  if (needsCanvas) options.nodeCanvas = requireCanvas();
+
   return options as unknown as Partial<Options>;
 }
 
@@ -69,17 +85,6 @@ export async function renderPng(
   url: string,
   size: number = DEFAULT_SIZE,
 ): Promise<Buffer> {
-  let nodeCanvas: unknown;
-  try {
-    nodeCanvas = (await import("canvas")).default;
-  } catch {
-    throw new QrgenError(
-      "PNG output needs the 'canvas' package. Install it (npm install canvas) " +
-        "and approve its build script.",
-    );
-  }
-  const qr = new QRCodeStyling(
-    toOptions(profile, url, size, "canvas", { nodeCanvas }),
-  );
+  const qr = new QRCodeStyling(toOptions(profile, url, size, "canvas"));
   return (await qr.getRawData("png")) as Buffer;
 }
