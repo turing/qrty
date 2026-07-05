@@ -37,6 +37,8 @@ export interface Profile {
   cornersDot?: StyleBlock & { type?: CornerDotType };
   background?: { color?: string; gradient?: Gradient };
   image?: string;
+  /** Auto-select a logo from the encoded URL's domain (see data/icon-map.json). */
+  autoIcon?: boolean;
   imageOptions?: {
     imageSize?: number;
     margin?: number;

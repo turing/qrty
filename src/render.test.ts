@@ -63,6 +63,38 @@ test("embeds a viewBox-only svg logo by injecting dimensions", async () => {
   assert.match(svg, /<image /);
 });
 
+test("autoIcon embeds a logo matching the url domain", async () => {
+  const orig = globalThis.fetch;
+  globalThis.fetch = (async () =>
+    new Response(
+      "<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'>" +
+        "<rect width='40' height='40' fill='#000'/></svg>",
+      { headers: { "content-type": "image/svg+xml" } },
+    )) as typeof fetch;
+  try {
+    const profile = {
+      dots: { type: "rounded", color: "#000000" },
+      background: { color: "#FFFFFF" },
+      autoIcon: true,
+      imageOptions: { imageSize: 0.3, hideBackgroundDots: true },
+    } as Profile;
+    const svg = (await renderSvg(profile, "https://youtube.com/watch?v=x")).toString("utf8");
+    assert.match(svg, /<image /);
+  } finally {
+    globalThis.fetch = orig;
+  }
+});
+
+test("autoIcon with an unknown domain renders no logo", async () => {
+  const profile = {
+    dots: { type: "rounded", color: "#000000" },
+    background: { color: "#FFFFFF" },
+    autoIcon: true,
+  } as Profile;
+  const svg = (await renderSvg(profile, "https://no-brand-xyz.example/")).toString("utf8");
+  assert.doesNotMatch(svg, /<image /);
+});
+
 test("renders png bytes", { skip: !CANVAS }, async () => {
   const png = await renderPng(P, "https://youtube.com");
   assert.equal(png.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
