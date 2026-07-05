@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { renderSvg, renderPng } from "./render.ts";
+import { renderSvg, renderPng, labelPng } from "./render.ts";
 import type { Profile } from "./profiles.ts";
 
 const P: Profile = {
@@ -98,4 +98,15 @@ test("autoIcon with an unknown domain renders no logo", async () => {
 test("renders png bytes", { skip: !CANVAS }, async () => {
   const png = await renderPng(P, "https://youtube.com");
   assert.equal(png.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+});
+
+test("labelPng composites a caption below the png", { skip: !CANVAS }, async () => {
+  const png = await renderPng(P, "https://youtube.com");
+  const labeled = await labelPng(png, {
+    text: "example.com",
+    color: "#000000",
+    background: "#FFFFFF",
+  });
+  assert.equal(labeled.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+  assert.ok(labeled.length > png.length, "labeled png should be taller/larger");
 });

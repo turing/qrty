@@ -24,5 +24,6 @@
     }
   },
   "background": { "color": "#FFFFFF" },
+  "labelColor": "#222222",
   "output": "./"
 }

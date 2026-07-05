@@ -7,5 +7,6 @@
   "image": "~/.qrgen/assets/default/qrgen-sample.jpeg",
   "imageOptions": { "imageSize": 0.28, "margin": 6, "hideBackgroundDots": true },
   "errorCorrectionLevel": "H",
+  "labelColor": "#000000",
   "output": "./"
 }

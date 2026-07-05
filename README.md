@@ -45,10 +45,10 @@ directory and add a `<profile>.json` yourself.
 - `-o, --output DIR` — output directory (overrides the profile's `output`).
 - `--png` — also write a PNG next to the SVG.
 - `--size PX` — image size in pixels (overrides the profile's `size`; default 300).
-- `--label TEXT` — caption below the QR (**SVG output only**), width-constrained,
-  in the base color by default. `--label-color HEX` (or a profile `labelColor`)
-  overrides the color. Added by post-processing the SVG, so it does not appear on
-  a `--png`.
+- `--label TEXT` — width-constrained caption below the QR, on both the SVG and
+  PNG. Its color is the profile's `labelColor` (each bundled profile sets one,
+  defaulting to the dots color). The SVG label is `<text>`; the PNG label is
+  drawn natively onto the canvas (a system font is registered for it).
 
 Output filename: `<label>-<profile>-<hash>-qr.svg`, where `<label>` is the
 registrable domain (`www.youtube.com` → `youtube`, `bbc.co.uk` → `bbc`) or the

@@ -4,5 +4,6 @@
   "cornersSquare": { "type": "square", "color": "#000000" },
   "cornersDot": { "type": "square", "color": "#000000" },
   "background": { "color": "#FFFFFF" },
+  "labelColor": "#000000",
   "output": "./"
 }

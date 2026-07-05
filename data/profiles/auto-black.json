@@ -7,5 +7,6 @@
   "autoIcon": true,
   "imageOptions": { "imageSize": 0.28, "margin": 6, "hideBackgroundDots": true },
   "errorCorrectionLevel": "H",
+  "labelColor": "#FFFFFF",
   "output": "./"
 }
