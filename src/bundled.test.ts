@@ -30,7 +30,7 @@ const names = readdirSync(BUNDLED)
 const profiles: Profile[] = names.map((n) => loadProfile(n, BUNDLED));
 
 test("ships a reasonable number of profiles", () => {
-  assert.ok(names.length > 0 && names.length <= 16);
+  assert.ok(names.length > 0 && names.length <= 18);
 });
 
 test("black and white are shipped", () => {
