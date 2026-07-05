@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -32,6 +32,27 @@ test("loads a valid profile", () => {
 
 test("missing file throws", () => {
   assert.throws(() => loadProfile("nope", tmp()), /Profile not found/);
+});
+
+test("a user profile overrides a default of the same name", () => {
+  const root = tmp();
+  const userDir = join(root, "user");
+  const defaultDir = join(root, "default");
+  mkdirSync(userDir);
+  mkdirSync(defaultDir);
+  write(defaultDir, "x", { ...VALID, dots: { type: "square", color: "#000000" } });
+  write(userDir, "x", { ...VALID, dots: { type: "dots", color: "#000000" } });
+  assert.equal(loadProfile("x", [userDir, defaultDir]).dots.type, "dots");
+});
+
+test("falls through to default when user has no such profile", () => {
+  const root = tmp();
+  const userDir = join(root, "user");
+  const defaultDir = join(root, "default");
+  mkdirSync(userDir);
+  mkdirSync(defaultDir);
+  write(defaultDir, "x", VALID);
+  assert.equal(loadProfile("x", [userDir, defaultDir]).dots.type, "rounded");
 });
 
 test("malformed json throws", () => {
