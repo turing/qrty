@@ -32,7 +32,7 @@ test("installStarterProfiles seeds default/, schema, logo, and creates user/", (
   assert.ok(installed.includes("black.json"));
   assert.ok(existsSync(join(dd, "black.json")));
   assert.ok(existsSync(join(h, "profiles", "profile.schema.json")));
-  assert.ok(existsSync(join(h, "logo.svg")));
+  assert.ok(existsSync(join(h, "assets", "default", "qrgen-sample.jpeg")));
   assert.ok(existsSync(join(h, "profiles", "user")));
 });
 
