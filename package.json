@@ -25,6 +25,7 @@
     "commander": "^12.1.0",
     "jsdom": "^29.1.1",
     "qr-code-styling": "^1.9.2",
+    "subset-font": "^2.5.0",
     "tldts": "^6.1.0"
   },
   "optionalDependencies": {
