@@ -44,7 +44,7 @@
   { "url": "https://cdn.simpleicons.org/appstore",       "match": ["apps.apple.com", "appstore"] },
 
   { "url": "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/amazon-black-icon.svg",   "match": ["amazon.com", "amazon"] },
-  { "url": "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/linkedin-square-icon.svg", "match": ["linkedin.com", "linkedin"] },
+  { "url": "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/linkedin-app-white-icon.svg", "match": ["linkedin.com", "linkedin"] },
   { "url": "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/microsoft-icon.svg",       "match": ["microsoft.com", "microsoftonline.com", "live.com", "msn.com", "microsoft", "msn"] },
   { "url": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Bing_Fluent_Logo.svg",         "match": ["bing.com", "bing"] },
   { "url": "https://upload.wikimedia.org/wikipedia/commons/d/d5/Slack_icon_2019.svg",          "match": ["slack.com", "slack"] },
