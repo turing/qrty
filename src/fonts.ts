@@ -2,6 +2,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
+import subsetFont from "subset-font";
+
 import { QrgenError } from "./errors.ts";
 
 interface FontDef {
@@ -46,10 +48,17 @@ export function fontFamily(name: string): string {
   return def(name).family;
 }
 
-/** CSS @import so a networked SVG viewer loads the Google font. */
-export function fontImportCss(name: string): string {
-  const family = def(name).family.replace(/ /g, "+");
-  return `@import url('https://fonts.googleapis.com/css2?family=${family}:wght@400&display=swap');`;
+/**
+ * A self-contained `@font-face` for the SVG: the font subset to just `text`'s
+ * characters, base64-embedded so the SVG renders the label offline.
+ */
+export async function fontFaceCss(name: string, text: string): Promise<string> {
+  const path = await ensureFontFile(name);
+  const subset = await subsetFont(readFileSync(path), text, {
+    targetFormat: "truetype",
+  });
+  const b64 = subset.toString("base64");
+  return `@font-face{font-family:'${def(name).family}';src:url(data:font/ttf;base64,${b64})}`;
 }
 
 /** Download (once) and cache the TTF; returns its path (for PNG registerFont). */

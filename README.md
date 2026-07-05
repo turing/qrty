@@ -50,10 +50,11 @@ directory and add a `<profile>.json` yourself.
   defaulting to the dots color).
 
 A profile's `labelFont` picks a Google font for the label — `"Open Sans"`,
-`"Roboto"`, or `"Montserrat"`. The SVG references it via an `@import` (a
-networked viewer loads it; others fall back to `sans-serif`); the PNG downloads
-the TTF once to `~/.qrgen/fonts/` and bakes it in. Without `labelFont`, the SVG
-uses a generic font stack and the PNG a registered system font.
+`"Roboto"`, or `"Montserrat"`. The TTF is downloaded once to `~/.qrgen/fonts/`,
+then **subset to just the label's characters and embedded** in the SVG as a
+base64 `@font-face` (a few KB) so the SVG is fully standalone/offline; the PNG
+bakes the same font in. Without `labelFont`, the SVG uses a generic font stack
+and the PNG a registered system font.
 
 Output filename: `<label>-<profile>-<hash>-qr.svg`, where `<label>` is the
 registrable domain (`www.youtube.com` → `youtube`, `bbc.co.uk` → `bbc`) or the

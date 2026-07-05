@@ -7,7 +7,7 @@ import { Command, CommanderError } from "commander";
 
 import { ensureProfilesDir } from "./bootstrap.ts";
 import { QrgenError } from "./errors.ts";
-import { ensureFontFile, fontFamily, fontImportCss } from "./fonts.ts";
+import { ensureFontFile, fontFaceCss, fontFamily } from "./fonts.ts";
 import { listSelections } from "./icons.ts";
 import { addLabel } from "./label.ts";
 import { deriveStem } from "./naming.ts";
@@ -63,7 +63,7 @@ export async function generate(opts: GenerateOptions): Promise<string[]> {
     const font = profile.labelFont
       ? {
           family: fontFamily(profile.labelFont),
-          importCss: fontImportCss(profile.labelFont),
+          css: await fontFaceCss(profile.labelFont, opts.label),
         }
       : undefined;
     svg = addLabel(svg, {
