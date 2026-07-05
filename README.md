@@ -120,6 +120,22 @@ transparency:
 | corner-gradient | green gradient finders, dark square dots         |
 | bg-gradient     | white modules on a dark gradient background       |
 | circle          | circular code outline, black rounded modules      |
+| logo            | centered placeholder logo (`~/.qrgen/logo.svg`)  |
+
+### Logos
+
+Set `image` (a file path, `data:` URI, or `http(s)` URL) plus optional
+`imageOptions` to place a centered logo:
+
+    "image": "~/logos/seal.png",
+    "imageOptions": { "imageSize": 0.3, "margin": 6, "hideBackgroundDots": true }
+
+qrgen inlines local files as self-contained `data:` URIs, so the output SVG has
+no external dependency. **An SVG logo needs nothing native.** A **raster** logo
+(PNG/JPG/WebP/GIF) needs the `canvas` package (to size it) — the same dependency
+as `--png` — and errors clearly if it is missing. Keep the logo small and use
+`errorCorrectionLevel: "H"` so the code still scans. The bundled `logo` profile
+points at `~/.qrgen/logo.svg` (seeded on first run); copy it to make your own.
 
 ## PNG output
 
