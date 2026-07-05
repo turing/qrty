@@ -4,9 +4,26 @@ import { existsSync, mkdtempSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { isAbsolute, join } from "node:path";
 
-import { generate, resolveOutputDir, expandHome } from "./cli.ts";
+import { generate, resolveOutputDir, expandHome, run } from "./cli.ts";
 import { installStarterProfiles } from "./bootstrap.ts";
+import { defaultCacheDir } from "./cache.ts";
 import type { Profile } from "./profiles.ts";
+
+async function captureRun(argv: string[]): Promise<{ code: number; out: string; err: string }> {
+  const origOut = process.stdout.write.bind(process.stdout);
+  const origErr = process.stderr.write.bind(process.stderr);
+  let out = "";
+  let err = "";
+  process.stdout.write = ((s: string) => ((out += s), true)) as typeof process.stdout.write;
+  process.stderr.write = ((s: string) => ((err += s), true)) as typeof process.stderr.write;
+  try {
+    const code = await run(argv);
+    return { code, out, err };
+  } finally {
+    process.stdout.write = origOut;
+    process.stderr.write = origErr;
+  }
+}
 
 function seededProfiles(): { defaultDir: string; searchDirs: string[] } {
   const home = mkdtempSync(join(tmpdir(), "qrgen-"));
@@ -18,6 +35,18 @@ function seededProfiles(): { defaultDir: string; searchDirs: string[] } {
 function outDir(): string {
   return mkdtempSync(join(tmpdir(), "qrgen-out-"));
 }
+
+test("run 'cache path' prints the cache directory", async () => {
+  const { code, out } = await captureRun(["cache", "path"]);
+  assert.equal(code, 0);
+  assert.equal(out.trim(), defaultCacheDir());
+});
+
+test("run 'cache' with an unknown subcommand errors", async () => {
+  const { code, err } = await captureRun(["cache", "bogus"]);
+  assert.equal(code, 2);
+  assert.match(err, /cache/);
+});
 
 test("resolveOutputDir precedence: flag > profile > default", () => {
   const p = { output: "./prof" } as Profile;

@@ -1,6 +1,12 @@
 import { readFileSync } from "node:fs";
 import { extname } from "node:path";
 
+import {
+  cacheKey,
+  defaultCacheDir,
+  readCacheEntry,
+  writeCacheEntry,
+} from "./cache.ts";
 import { QrgenError } from "./errors.ts";
 import { expandHome } from "./paths.ts";
 
@@ -66,36 +72,92 @@ function toDataUri(mime: string, bytes: Buffer): ResolvedImage {
 }
 
 /**
+ * Does the body look like an image? The header is not enough — svgrepo and
+ * brandfetch answer HTTP 200 with an HTML gate, which must never be cached or
+ * embedded. Trust an `image/*` MIME, else sniff the leading magic bytes.
+ */
+function looksLikeImage(mime: string, bytes: Buffer): boolean {
+  if (mime.startsWith("image/")) return true;
+  const head = bytes.subarray(0, 12);
+  const text = head.toString("utf8").trimStart().toLowerCase();
+  if (text.startsWith("<svg") || text.startsWith("<?xml")) return true;
+  if (head[0] === 0x89 && head[1] === 0x50 && head[2] === 0x4e && head[3] === 0x47)
+    return true; // PNG
+  if (head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) return true; // JPEG
+  if (head.subarray(0, 4).toString("ascii") === "GIF8") return true; // GIF
+  if (
+    head.subarray(0, 4).toString("ascii") === "RIFF" &&
+    head.subarray(8, 12).toString("ascii") === "WEBP"
+  )
+    return true; // WEBP
+  return false;
+}
+
+export interface FetchAssetOptions {
+  /** Cache directory override (defaults to `~/.qrgen/cache`); injected in tests. */
+  cacheDir?: string;
+}
+
+/**
+ * Fetch a remote asset through the on-disk cache: each URL downloads once, then
+ * serves from `~/.qrgen/cache`. Only 2xx image responses are cached — a non-2xx
+ * or a non-image body throws `QrgenError` and leaves the cache untouched.
+ */
+export async function fetchAsset(
+  url: string,
+  opts: FetchAssetOptions = {},
+): Promise<{ bytes: Buffer; mime: string }> {
+  const dir = opts.cacheDir ?? defaultCacheDir();
+  const key = cacheKey(url);
+  const hit = readCacheEntry(key, dir);
+  if (hit) return hit;
+
+  let res: Response;
+  try {
+    res = await fetch(url);
+  } catch (err) {
+    throw new QrgenError(
+      `Could not fetch logo ${url}: ${(err as Error).message}`,
+    );
+  }
+  if (!res.ok) {
+    throw new QrgenError(`Could not fetch logo ${url}: HTTP ${res.status}`);
+  }
+  const headerType = (res.headers.get("content-type") ?? "")
+    .split(";")[0]
+    .trim();
+  const ext = extname(new URL(url).pathname).toLowerCase();
+  const mime = headerType || MIME[ext] || "";
+  if (!mime) {
+    throw new QrgenError(`Could not determine logo type for ${url}.`);
+  }
+  const bytes = Buffer.from(await res.arrayBuffer());
+  if (!looksLikeImage(mime, bytes)) {
+    throw new QrgenError(
+      `Could not fetch logo ${url}: response was not an image.`,
+    );
+  }
+  writeCacheEntry(key, { bytes, mime }, dir);
+  return { bytes, mime };
+}
+
+/**
  * Turn a profile `image` (file path, `data:` URI, or http(s) URL) into a
  * self-contained `data:` URI. Local files are read and remote URLs are fetched
- * and inlined — qr-code-styling cannot load either directly in Node.
+ * (through the disk cache) and inlined — qr-code-styling cannot load either
+ * directly in Node.
  */
-export async function resolveImage(image: string): Promise<ResolvedImage> {
+export async function resolveImage(
+  image: string,
+  opts: FetchAssetOptions = {},
+): Promise<ResolvedImage> {
   if (image.startsWith("data:")) {
     return { image, isRaster: !image.startsWith("data:image/svg+xml") };
   }
 
   if (image.startsWith("http://") || image.startsWith("https://")) {
-    let res: Response;
-    try {
-      res = await fetch(image);
-    } catch (err) {
-      throw new QrgenError(
-        `Could not fetch logo ${image}: ${(err as Error).message}`,
-      );
-    }
-    if (!res.ok) {
-      throw new QrgenError(`Could not fetch logo ${image}: HTTP ${res.status}`);
-    }
-    const headerType = (res.headers.get("content-type") ?? "")
-      .split(";")[0]
-      .trim();
-    const ext = extname(new URL(image).pathname).toLowerCase();
-    const mime = headerType || MIME[ext] || "";
-    if (!mime) {
-      throw new QrgenError(`Could not determine logo type for ${image}.`);
-    }
-    return toDataUri(mime, Buffer.from(await res.arrayBuffer()));
+    const { bytes, mime } = await fetchAsset(image, opts);
+    return toDataUri(mime, bytes);
   }
 
   const path = expandHome(image);

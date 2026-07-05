@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { Command, CommanderError } from "commander";
 
 import { ensureProfilesDir } from "./bootstrap.ts";
+import { clearCache, defaultCacheDir } from "./cache.ts";
 import { QrgenError } from "./errors.ts";
 import { ensureFontFile, fontFaceCss, fontFamily } from "./fonts.ts";
 import { listSelections } from "./icons.ts";
@@ -108,6 +109,25 @@ export async function run(argv: string[]): Promise<number> {
       process.stdout.write(`${match.padEnd(24)} ${url}\n`);
     }
     return 0;
+  }
+
+  if (argv[0] === "cache") {
+    const sub = argv[1];
+    if (sub === "path") {
+      process.stdout.write(`${defaultCacheDir()}\n`);
+      return 0;
+    }
+    if (sub === "clear") {
+      const { entries, bytes } = clearCache(defaultCacheDir());
+      process.stdout.write(
+        `Cleared ${entries} cached asset(s), freed ${bytes} bytes.\n`,
+      );
+      return 0;
+    }
+    process.stderr.write(
+      `error: unknown cache subcommand '${sub ?? ""}'. Use 'path' or 'clear'.\n`,
+    );
+    return 2;
   }
 
   const program = new Command();
