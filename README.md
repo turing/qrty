@@ -47,8 +47,13 @@ directory and add a `<profile>.json` yourself.
 - `--size PX` — image size in pixels (overrides the profile's `size`; default 300).
 - `--label TEXT` — width-constrained caption below the QR, on both the SVG and
   PNG. Its color is the profile's `labelColor` (each bundled profile sets one,
-  defaulting to the dots color). The SVG label is `<text>`; the PNG label is
-  drawn natively onto the canvas (a system font is registered for it).
+  defaulting to the dots color).
+
+A profile's `labelFont` picks a Google font for the label — `"Open Sans"`,
+`"Roboto"`, or `"Montserrat"`. The SVG references it via an `@import` (a
+networked viewer loads it; others fall back to `sans-serif`); the PNG downloads
+the TTF once to `~/.qrgen/fonts/` and bakes it in. Without `labelFont`, the SVG
+uses a generic font stack and the PNG a registered system font.
 
 Output filename: `<label>-<profile>-<hash>-qr.svg`, where `<label>` is the
 registrable domain (`www.youtube.com` → `youtube`, `bbc.co.uk` → `bbc`) or the
@@ -206,6 +211,9 @@ Auto-icon sources (`data/icon-map.json`):
 - [iOS Icon Gallery](https://www.iosicongallery.com) (Jim Nielsen) — app icons.
 - App URL scheme reference: **app-urls** by Bhagya Nirmaan Silva
   ([bhagyas/app-urls](https://github.com/bhagyas/app-urls)).
+
+Label fonts (`labelFont`): **Open Sans**, **Roboto**, **Montserrat** from
+[Google Fonts](https://fonts.google.com) (OFL).
 
 ## License
 

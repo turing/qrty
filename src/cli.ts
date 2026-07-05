@@ -7,6 +7,7 @@ import { Command, CommanderError } from "commander";
 
 import { ensureProfilesDir } from "./bootstrap.ts";
 import { QrgenError } from "./errors.ts";
+import { ensureFontFile, fontFamily, fontImportCss } from "./fonts.ts";
 import { listSelections } from "./icons.ts";
 import { addLabel } from "./label.ts";
 import { deriveStem } from "./naming.ts";
@@ -59,7 +60,18 @@ export async function generate(opts: GenerateOptions): Promise<string[]> {
 
   let svg = (await renderSvg(profile, opts.url, opts.size)).toString("utf8");
   if (opts.label) {
-    svg = addLabel(svg, { text: opts.label, color: labelColor, background: labelBg });
+    const font = profile.labelFont
+      ? {
+          family: fontFamily(profile.labelFont),
+          importCss: fontImportCss(profile.labelFont),
+        }
+      : undefined;
+    svg = addLabel(svg, {
+      text: opts.label,
+      color: labelColor,
+      background: labelBg,
+      font,
+    });
   }
 
   const written: string[] = [];
@@ -70,7 +82,18 @@ export async function generate(opts: GenerateOptions): Promise<string[]> {
   if (opts.png) {
     let png = await renderPng(profile, opts.url, opts.size);
     if (opts.label) {
-      png = await labelPng(png, { text: opts.label, color: labelColor, background: labelBg });
+      const font = profile.labelFont
+        ? {
+            path: await ensureFontFile(profile.labelFont),
+            family: fontFamily(profile.labelFont),
+          }
+        : undefined;
+      png = await labelPng(png, {
+        text: opts.label,
+        color: labelColor,
+        background: labelBg,
+        font,
+      });
     }
     const pngPath = join(dir, `${stem}.png`);
     writeFileSync(pngPath, png);
