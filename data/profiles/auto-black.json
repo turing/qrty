@@ -1,0 +1,11 @@
+{
+  "$schema": "../profile.schema.json",
+  "dots": { "type": "rounded", "color": "#FFFFFF" },
+  "cornersSquare": { "type": "extra-rounded", "color": "#FFFFFF" },
+  "cornersDot": { "type": "dot", "color": "#FFFFFF" },
+  "background": { "color": "#000000" },
+  "autoIcon": true,
+  "imageOptions": { "imageSize": 0.28, "margin": 6, "hideBackgroundDots": true },
+  "errorCorrectionLevel": "H",
+  "output": "./"
+}

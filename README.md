@@ -131,6 +131,21 @@ transparency:
 | bg-gradient     | white modules on a dark gradient background       |
 | circle          | circular code outline, black rounded modules      |
 | sample          | centered logo fetched from a URL (a bash icon)    |
+| auto-white      | auto-detected brand icon, dark modules on white   |
+| auto-black      | auto-detected brand icon, light modules on black  |
+
+### Auto icons
+
+Set `"autoIcon": true` and qrgen picks a logo from the encoded URL's domain —
+`qrgen auto-white https://youtube.com/…` centers the YouTube icon, no config.
+Detection matches the host (most specific first: `docs.google.com` before
+`google.com`) against `data/icon-map.json`; no match → no logo. Icons are
+plain image URLs (SVG from Simple Icons / developer-icons — canvas-free; raster
+from iOS Icon Gallery — needs `canvas`), so the map is easy to extend.
+
+List every supported selection:
+
+    qrgen icons
 
 ### Logos
 
@@ -179,6 +194,14 @@ Bundled sample assets:
   [fromoldbooks.org](https://www.fromoldbooks.org/Comment/unwatermarked.cgi?source=DelamotteOrnamentalAlphabets;item=051-16th-Century-letter-q-q85-468x500.jpg).
 - The `sample` profile's logo is the bash icon from
   [xandemon/developer-icons](https://github.com/xandemon/developer-icons).
+
+Auto-icon sources (`data/icon-map.json`):
+
+- [Simple Icons](https://simpleicons.org) — most brand SVGs.
+- [xandemon/developer-icons](https://github.com/xandemon/developer-icons).
+- [iOS Icon Gallery](https://www.iosicongallery.com) (Jim Nielsen) — app icons.
+- App URL scheme reference: **app-urls** by Bhagya Nirmaan Silva
+  ([bhagyas/app-urls](https://github.com/bhagyas/app-urls)).
 
 ## License
 

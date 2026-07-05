@@ -7,6 +7,7 @@ import { Command, CommanderError } from "commander";
 
 import { ensureProfilesDir } from "./bootstrap.ts";
 import { QrgenError } from "./errors.ts";
+import { listSelections } from "./icons.ts";
 import { deriveStem } from "./naming.ts";
 import { expandHome } from "./paths.ts";
 import {
@@ -63,6 +64,13 @@ export async function generate(opts: GenerateOptions): Promise<string[]> {
 }
 
 export async function run(argv: string[]): Promise<number> {
+  if (argv[0] === "icons") {
+    for (const { match, url } of listSelections()) {
+      process.stdout.write(`${match.padEnd(24)} ${url}\n`);
+    }
+    return 0;
+  }
+
   const program = new Command();
   program
     .name("qrgen")

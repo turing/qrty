@@ -41,8 +41,12 @@
       }
     },
     "image": {
-      "description": "Center logo (file path or data URI)",
+      "description": "Center logo (file path, data URI, or URL)",
       "type": "string"
+    },
+    "autoIcon": {
+      "description": "Auto-select a logo from the encoded URL's domain",
+      "type": "boolean"
     },
     "imageOptions": {
       "type": "object",

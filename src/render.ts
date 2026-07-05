@@ -4,6 +4,7 @@ import { JSDOM } from "jsdom";
 import type { Options } from "qr-code-styling";
 
 import { QrgenError } from "./errors.ts";
+import { resolveAutoIconUrl } from "./icons.ts";
 import { resolveImage } from "./image.ts";
 import type { Profile } from "./profiles.ts";
 
@@ -60,8 +61,11 @@ async function toOptions(
   if (profile.background) options.backgroundOptions = profile.background;
 
   let needsCanvas = type === "canvas"; // PNG output always needs canvas
-  if (profile.image) {
-    const { image, isRaster } = await resolveImage(profile.image);
+  // Explicit image wins; otherwise autoIcon detects one from the URL.
+  const imageSource =
+    profile.image ?? (profile.autoIcon ? resolveAutoIconUrl(url) : null);
+  if (imageSource) {
+    const { image, isRaster } = await resolveImage(imageSource);
     options.image = image;
     if (profile.imageOptions) options.imageOptions = profile.imageOptions;
     if (isRaster) needsCanvas = true; // raster logos must be sized via canvas
