@@ -57,9 +57,19 @@ Output directory precedence: `--output` flag > profile `output` key >
 
 ## Profiles
 
-One JSON file per profile at `~/.qrgen/profiles/<name>.json`; the basename is the
-name you pass on the command line. A profile is the styling subset of
-qr-code-styling's options plus qrgen's `output` — never the data.
+Profiles live under `~/.qrgen/profiles/` in two layers:
+
+- `default/` — the ship-managed starters. Re-seeded from the package; don't edit
+  these (edits get replaced on reinstall).
+- `user/` — your profiles. A `user/<name>.json` **overrides** a `default/<name>.json`
+  of the same name, so put your own profiles and any edited copies of a default
+  here.
+
+The basename is the name you pass on the command line; lookup checks `user/`
+first, then `default/`. (Upgrading from a flat `~/.qrgen/profiles/*.json` layout
+is automatic: unedited default copies are dropped, your own profiles move to
+`user/`.) A profile is the styling subset of qr-code-styling's options plus
+qrgen's `output` — never the data.
 
     {
       "$schema": "../profile.schema.json",

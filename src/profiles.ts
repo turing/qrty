@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -13,7 +13,12 @@ import type {
   ErrorCorrectionLevel,
 } from "./styles.ts";
 
-export const PROFILES_DIR = join(homedir(), ".qrgen", "profiles");
+/** ~/.qrgen/profiles — holds `default/` (ship-managed) and `user/` (yours). */
+export const PROFILES_ROOT = join(homedir(), ".qrgen", "profiles");
+export const DEFAULT_DIR = join(PROFILES_ROOT, "default");
+export const USER_DIR = join(PROFILES_ROOT, "user");
+/** Search order: user profiles override defaults of the same name. */
+export const SEARCH_DIRS: string[] = [USER_DIR, DEFAULT_DIR];
 
 export interface Gradient {
   type?: "linear" | "radial";
@@ -67,15 +72,26 @@ function assertReadableContrast(profile: Profile, where: string): void {
   }
 }
 
-export function loadProfile(name: string, dir: string = PROFILES_DIR): Profile {
-  const path = join(dir, `${name}.json`);
-
-  let raw: string;
-  try {
-    raw = readFileSync(path, "utf8");
-  } catch {
-    throw new QrgenError(`Profile not found: ${path}`);
+/**
+ * Load `<name>.json`, searching `dirs` in order (first match wins, so a `user/`
+ * profile overrides a `default/` one of the same name). Validates against the
+ * schema and rejects unreadable (foreground == background) profiles.
+ */
+export function loadProfile(
+  name: string,
+  dirs: string | string[] = SEARCH_DIRS,
+): Profile {
+  const searchDirs = Array.isArray(dirs) ? dirs : [dirs];
+  const path = searchDirs
+    .map((d) => join(d, `${name}.json`))
+    .find((p) => existsSync(p));
+  if (!path) {
+    throw new QrgenError(
+      `Profile not found: ${name} (searched ${searchDirs.join(", ")})`,
+    );
   }
+
+  const raw = readFileSync(path, "utf8");
 
   let data: unknown;
   try {

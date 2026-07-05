@@ -9,7 +9,12 @@ import { ensureProfilesDir } from "./bootstrap.ts";
 import { QrgenError } from "./errors.ts";
 import { deriveStem } from "./naming.ts";
 import { expandHome } from "./paths.ts";
-import { loadProfile, PROFILES_DIR, type Profile } from "./profiles.ts";
+import {
+  DEFAULT_DIR,
+  SEARCH_DIRS,
+  loadProfile,
+  type Profile,
+} from "./profiles.ts";
 import { renderPng, renderSvg } from "./render.ts";
 
 export { expandHome };
@@ -27,17 +32,19 @@ export interface GenerateOptions {
   output?: string;
   png?: boolean;
   size?: number;
-  profilesDir?: string;
+  /** Where to seed starters (defaults to ~/.qrgen/profiles/default). */
+  defaultDir?: string;
+  /** Profile lookup order (defaults to [user, default]). */
+  searchDirs?: string[];
   interactive?: boolean;
 }
 
 export async function generate(opts: GenerateOptions): Promise<string[]> {
-  const profilesDir = opts.profilesDir ?? PROFILES_DIR;
-  await ensureProfilesDir(profilesDir, {
+  await ensureProfilesDir(opts.defaultDir ?? DEFAULT_DIR, {
     interactive: opts.interactive ?? Boolean(process.stdin.isTTY),
   });
 
-  const profile = loadProfile(opts.profile, profilesDir);
+  const profile = loadProfile(opts.profile, opts.searchDirs ?? SEARCH_DIRS);
   const stem = deriveStem(opts.url, opts.profile);
   const dir = resolveOutputDir(opts.output, profile);
   mkdirSync(dir, { recursive: true });

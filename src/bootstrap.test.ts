@@ -1,33 +1,46 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, existsSync, writeFileSync } from "node:fs";
+import {
+  mkdtempSync,
+  mkdirSync,
+  existsSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { ensureProfilesDir, installStarterProfiles } from "./bootstrap.ts";
 import { QrgenError } from "./errors.ts";
 
-function tmp(): string {
-  return mkdtempSync(join(tmpdir(), "qrgen-"));
-}
+const DATA_REPO = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
 
 const nullStream = { write: (_: string): void => {} };
 
-test("installStarterProfiles copies profiles and schema to the parent", () => {
-  const home = tmp();
-  const profilesDir = join(home, "profiles");
-  const installed = installStarterProfiles(profilesDir);
+function home(): string {
+  return mkdtempSync(join(tmpdir(), "qrgen-"));
+}
+function defaultDirIn(h: string): string {
+  return join(h, "profiles", "default");
+}
+
+test("installStarterProfiles seeds default/, schema, logo, and creates user/", () => {
+  const h = home();
+  const dd = defaultDirIn(h);
+  const installed = installStarterProfiles(dd);
   assert.ok(installed.includes("black.json"));
-  assert.ok(existsSync(join(profilesDir, "black.json")));
-  assert.ok(existsSync(join(home, "profile.schema.json")));
-  assert.ok(existsSync(join(home, "logo.svg")));
+  assert.ok(existsSync(join(dd, "black.json")));
+  assert.ok(existsSync(join(h, "profiles", "profile.schema.json")));
+  assert.ok(existsSync(join(h, "logo.svg")));
+  assert.ok(existsSync(join(h, "profiles", "user")));
 });
 
-test("ensure is a no-op when profiles already exist", async () => {
-  const dir = join(tmp(), "profiles");
-  mkdirSync(dir);
-  writeFileSync(join(dir, "mine.json"), "{}");
-  await ensureProfilesDir(dir, {
+test("ensure is a no-op when default profiles exist", async () => {
+  const dd = defaultDirIn(home());
+  mkdirSync(dd, { recursive: true });
+  writeFileSync(join(dd, "x.json"), "{}");
+  await ensureProfilesDir(dd, {
     interactive: true,
     confirm: () => {
       throw new Error("confirm must not be called when profiles exist");
@@ -36,54 +49,72 @@ test("ensure is a no-op when profiles already exist", async () => {
   });
 });
 
-test("non-interactive missing dir throws instead of hanging", async () => {
-  const dir = join(tmp(), "profiles");
+test("non-interactive with no defaults throws instead of hanging", async () => {
+  const dd = defaultDirIn(home());
   await assert.rejects(
-    () => ensureProfilesDir(dir, { interactive: false, stream: nullStream }),
+    () => ensureProfilesDir(dd, { interactive: false, stream: nullStream }),
     /No profiles found/,
   );
 });
 
-test("present-but-empty dir offers to seed and seeds on yes", async () => {
-  const dir = join(tmp(), "profiles");
-  mkdirSync(dir); // exists, but holds no .json profiles
-  await ensureProfilesDir(dir, {
+test("interactive yes seeds the defaults", async () => {
+  const dd = defaultDirIn(home());
+  await ensureProfilesDir(dd, {
     interactive: true,
     confirm: () => true,
     stream: nullStream,
   });
-  assert.ok(existsSync(join(dir, "black.json")));
+  assert.ok(existsSync(join(dd, "black.json")));
 });
 
-test("present-but-empty dir throws non-interactively", async () => {
-  const dir = join(tmp(), "profiles");
-  mkdirSync(dir);
-  await assert.rejects(
-    () => ensureProfilesDir(dir, { interactive: false, stream: nullStream }),
-    /No profiles found/,
-  );
-});
-
-test("interactive yes creates and seeds", async () => {
-  const dir = join(tmp(), "profiles");
-  await ensureProfilesDir(dir, {
-    interactive: true,
-    confirm: () => true,
-    stream: nullStream,
-  });
-  assert.ok(existsSync(join(dir, "black.json")));
-});
-
-test("interactive no throws and leaves the directory absent", async () => {
-  const dir = join(tmp(), "profiles");
+test("interactive no throws and seeds nothing", async () => {
+  const dd = defaultDirIn(home());
   await assert.rejects(
     () =>
-      ensureProfilesDir(dir, {
+      ensureProfilesDir(dd, {
         interactive: true,
         confirm: () => false,
         stream: nullStream,
       }),
     QrgenError,
   );
-  assert.ok(!existsSync(dir));
+  assert.ok(!existsSync(join(dd, "black.json")));
+});
+
+test("legacy flat profiles migrate into user/ before seeding", async () => {
+  const h = home();
+  const root = join(h, "profiles");
+  mkdirSync(root, { recursive: true });
+  writeFileSync(join(root, "seal.json"), "{}"); // pre-split flat profile
+  const dd = join(root, "default");
+  await ensureProfilesDir(dd, {
+    interactive: true,
+    confirm: () => true,
+    stream: nullStream,
+  });
+  assert.ok(existsSync(join(root, "user", "seal.json")), "seal moved to user/");
+  assert.ok(!existsSync(join(root, "seal.json")), "flat copy removed");
+  assert.ok(existsSync(join(dd, "black.json")), "defaults seeded");
+});
+
+test("unedited bundled-name flat profiles are discarded, not pinned", async () => {
+  const h = home();
+  const root = join(h, "profiles");
+  mkdirSync(root, { recursive: true });
+  // an exact copy of the bundled default (unedited)
+  writeFileSync(
+    join(root, "black.json"),
+    readFileSync(join(DATA_REPO, "profiles", "black.json")),
+  );
+  const dd = join(root, "default");
+  await ensureProfilesDir(dd, {
+    interactive: true,
+    confirm: () => true,
+    stream: nullStream,
+  });
+  assert.ok(
+    !existsSync(join(root, "user", "black.json")),
+    "unedited default must not be pinned in user/",
+  );
+  assert.ok(existsSync(join(dd, "black.json")), "fresh default present");
 });
