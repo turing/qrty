@@ -16,6 +16,8 @@ export interface LabelOptions {
   color: string;
   /** Solid background of the QR; the label strip matches it (skipped if transparent). */
   background?: string;
+  /** Optional web font: family plus an @import a networked viewer loads. */
+  font?: { family: string; importCss?: string };
 }
 
 /**
@@ -47,13 +49,20 @@ export function addLabel(svg: string, opts: LabelOptions): string {
       ? `<rect x="0" y="${height}" width="${width}" height="${stripH}" fill="${opts.background}"/>`
       : "";
 
+  const family = opts.font
+    ? `'${opts.font.family}', sans-serif`
+    : "-apple-system, Segoe UI, Helvetica, Arial, sans-serif";
+  const style = opts.font?.importCss
+    ? `<style>${opts.font.importCss}</style>`
+    : "";
+
   const text =
     `<text x="${width / 2}" y="${baselineY.toFixed(2)}" text-anchor="middle" ` +
-    `font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" ` +
+    `font-family="${family}" ` +
     `font-size="${fontSize.toFixed(2)}" fill="${opts.color}">` +
     `${escapeXml(opts.text)}</text>`;
 
   return svg
-    .replace(root, newRoot + strip)
+    .replace(root, newRoot + style + strip)
     .replace(/<\/svg>\s*$/, text + "</svg>");
 }

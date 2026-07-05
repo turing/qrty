@@ -62,6 +62,7 @@
     "shape": { "enum": ["square", "circle"] },
     "size": { "type": "integer", "minimum": 1 },
     "labelColor": { "$ref": "#/$defs/hexColor" },
+    "labelFont": { "enum": ["Open Sans", "Roboto", "Montserrat"] },
     "output": { "type": "string" }
   },
   "required": ["dots"],

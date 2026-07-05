@@ -50,6 +50,8 @@ export interface Profile {
   size?: number;
   /** Default color for a `--label` caption (falls back to the dots color). */
   labelColor?: string;
+  /** Google font for the label: "Open Sans" | "Roboto" | "Montserrat". */
+  labelFont?: "Open Sans" | "Roboto" | "Montserrat";
   output?: string;
 }
 

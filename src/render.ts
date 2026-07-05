@@ -144,10 +144,21 @@ function ensureLabelFont(canvas: CanvasModule): string {
  */
 export async function labelPng(
   qrPng: Buffer,
-  opts: { text: string; color: string; background?: string },
+  opts: {
+    text: string;
+    color: string;
+    background?: string;
+    font?: { path: string; family: string };
+  },
 ): Promise<Buffer> {
   const canvas = requireCanvas() as CanvasModule;
-  const family = ensureLabelFont(canvas);
+  let family: string;
+  if (opts.font) {
+    canvas.registerFont(opts.font.path, { family: opts.font.family });
+    family = opts.font.family;
+  } else {
+    family = ensureLabelFont(canvas);
+  }
   const img = await canvas.loadImage(qrPng);
   const w = img.width;
   const h = img.height;
