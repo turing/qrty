@@ -44,7 +44,7 @@ directory and add a `<profile>.json` yourself.
 - `url` — the URL to encode.
 - `-o, --output DIR` — output directory (overrides the profile's `output`).
 - `--png` — also write a PNG next to the SVG.
-- `--size PX` — image size in pixels (overrides the profile's `size`; default 300).
+- `--size PX` — image size in pixels (overrides the profile's `size`; default 1024).
 - `--label TEXT` — width-constrained caption below the QR, on both the SVG and
   PNG. Its color is the profile's `labelColor` (each bundled profile sets one,
   defaulting to the dots color).

@@ -20,25 +20,40 @@ export interface ResolvedImage {
   isRaster: boolean;
 }
 
+const ICON_TARGET_PX = 1024;
+
 /**
- * Node/jsdom sizes an SVG from its intrinsic width/height; many icons ship only
- * a viewBox, which makes qr-code-styling fail to load them. Inject width/height
- * from the viewBox when they are missing.
+ * Normalize a logo SVG's intrinsic size to a large value (preserving aspect).
+ * node-canvas rasterizes an SVG at its width/height, so a 24×24 icon (Simple
+ * Icons) would upscale to a blur; forcing ~1024px keeps it crisp in the PNG.
+ * Also required because jsdom cannot size a viewBox-only SVG at all.
  */
-function ensureSvgDimensions(svg: string): string {
+function normalizeSvgSize(svg: string, target = ICON_TARGET_PX): string {
   const tag = svg.match(/<svg\b[^>]*>/i)?.[0];
   if (!tag) return svg;
-  if (/\bwidth\s*=/i.test(tag) && /\bheight\s*=/i.test(tag)) return svg;
   const vb = tag.match(
     /viewBox\s*=\s*["']\s*[\d.eE+-]+\s+[\d.eE+-]+\s+([\d.eE+-]+)\s+([\d.eE+-]+)/i,
   );
-  if (!vb) return svg;
-  return svg.replace(tag, tag.replace(/<svg\b/i, `<svg width="${vb[1]}" height="${vb[2]}"`));
+  let w = vb ? Number(vb[1]) : Number(tag.match(/\bwidth\s*=\s*"([\d.]+)/i)?.[1]);
+  let h = vb ? Number(vb[2]) : Number(tag.match(/\bheight\s*=\s*"([\d.]+)/i)?.[1]);
+  if (!w || !h) return svg;
+  const scale = target / Math.max(w, h);
+  const nw = Math.round(w * scale);
+  const nh = Math.round(h * scale);
+
+  let newTag = tag;
+  newTag = /\bwidth\s*=/i.test(newTag)
+    ? newTag.replace(/\bwidth\s*=\s*"[^"]*"/i, `width="${nw}"`)
+    : newTag.replace(/<svg\b/i, `<svg width="${nw}"`);
+  newTag = /\bheight\s*=/i.test(newTag)
+    ? newTag.replace(/\bheight\s*=\s*"[^"]*"/i, `height="${nh}"`)
+    : newTag.replace(/<svg\b/i, `<svg height="${nh}"`);
+  return svg.replace(tag, newTag);
 }
 
 function toDataUri(mime: string, bytes: Buffer): ResolvedImage {
   if (mime === "image/svg+xml") {
-    const svg = ensureSvgDimensions(bytes.toString("utf8"));
+    const svg = normalizeSvgSize(bytes.toString("utf8"));
     return {
       image: `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`,
       isRaster: false,

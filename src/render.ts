@@ -23,7 +23,7 @@ interface QRCtor {
 const require = createRequire(import.meta.url);
 const QRCodeStyling = require("qr-code-styling") as QRCtor;
 
-const DEFAULT_SIZE = 300;
+const DEFAULT_SIZE = 1024;
 
 type Backend = "svg" | "canvas";
 
