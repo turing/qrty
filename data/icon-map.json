@@ -48,5 +48,11 @@
   { "url": "https://raw.githubusercontent.com/xandemon/developer-icons/main/icons/bing.svg",      "match": ["bing.com", "bing"] },
   { "url": "https://raw.githubusercontent.com/xandemon/developer-icons/main/icons/slack.svg",     "match": ["slack.com", "slack"] },
 
-  { "url": "https://cdn.jim-nielsen.com/ios/1024/amazon-shopping-2021-03-02.png?rf=1024", "match": ["amazon.com", "amazon"] }
+  { "url": "https://cdn.jim-nielsen.com/ios/1024/amazon-shopping-2021-03-02.png?rf=1024", "match": ["amazon.com", "amazon"] },
+
+  { "url": "https://play-lh.googleusercontent.com/MdvwCO_2tr5mKEE0Z0BWbS5MYFwLHtu_BcTxq7LnmBB1WYksurJAwoUeCX7HlVNIOojABqhzKTS4n3kwwTevCcI=w480-h960-rw", "match": ["craigslist.org", "craigslist"] },
+  { "url": "https://cdn.jim-nielsen.com/ios/1024/microsoft-office-2020-02-26.png?rf=1024",     "match": ["office.com", "office"] },
+  { "url": "https://cdn.jim-nielsen.com/ios/1024/microsoft-excel-2025-10-27.png?rf=1024",      "match": ["excel"] },
+  { "url": "https://cdn.jim-nielsen.com/ios/1024/microsoft-word-2025-10-27.png?rf=1024",       "match": ["word"] },
+  { "url": "https://cdn.jim-nielsen.com/ios/1024/microsoft-powerpoint-2025-10-27.png?rf=1024", "match": ["powerpoint"] }
 ]

@@ -8,6 +8,7 @@ import { Command, CommanderError } from "commander";
 import { ensureProfilesDir } from "./bootstrap.ts";
 import { QrgenError } from "./errors.ts";
 import { listSelections } from "./icons.ts";
+import { addLabel } from "./label.ts";
 import { deriveStem } from "./naming.ts";
 import { expandHome } from "./paths.ts";
 import {
@@ -33,6 +34,10 @@ export interface GenerateOptions {
   output?: string;
   png?: boolean;
   size?: number;
+  /** Caption below the QR (SVG output only). */
+  label?: string;
+  /** Label color; defaults to the profile's base (dots) color. */
+  labelColor?: string;
   /** Where to seed starters (defaults to ~/.qrgen/profiles/default). */
   defaultDir?: string;
   /** Profile lookup order (defaults to [user, default]). */
@@ -50,9 +55,20 @@ export async function generate(opts: GenerateOptions): Promise<string[]> {
   const dir = resolveOutputDir(opts.output, profile);
   mkdirSync(dir, { recursive: true });
 
+  let svg = (await renderSvg(profile, opts.url, opts.size)).toString("utf8");
+  if (opts.label) {
+    const color =
+      opts.labelColor ?? profile.labelColor ?? profile.dots.color ?? "#000000";
+    svg = addLabel(svg, {
+      text: opts.label,
+      color,
+      background: profile.background?.color,
+    });
+  }
+
   const written: string[] = [];
   const svgPath = join(dir, `${stem}.svg`);
-  writeFileSync(svgPath, await renderSvg(profile, opts.url, opts.size));
+  writeFileSync(svgPath, svg);
   written.push(resolve(svgPath));
 
   if (opts.png) {
@@ -80,12 +96,20 @@ export async function run(argv: string[]): Promise<number> {
     .option("-o, --output <dir>", "output directory (overrides the profile)")
     .option("--png", "also write a PNG next to the SVG")
     .option("--size <px>", "image size in pixels", (v) => Number.parseInt(v, 10))
+    .option("--label <text>", "caption below the QR (SVG output only)")
+    .option("--label-color <hex>", "label color (defaults to the base color)")
     .allowExcessArguments(false)
     .exitOverride();
 
   let profile: string;
   let url: string;
-  let opts: { output?: string; png?: boolean; size?: number };
+  let opts: {
+    output?: string;
+    png?: boolean;
+    size?: number;
+    label?: string;
+    labelColor?: string;
+  };
   try {
     program.parse(argv, { from: "user" });
     [profile, url] = program.args as [string, string];
@@ -102,6 +126,8 @@ export async function run(argv: string[]): Promise<number> {
       output: opts.output,
       png: opts.png,
       size: opts.size,
+      label: opts.label,
+      labelColor: opts.labelColor,
     });
     for (const p of written) process.stdout.write(`${p}\n`);
     return 0;

@@ -61,6 +61,7 @@
     "margin": { "type": "integer", "minimum": 0 },
     "shape": { "enum": ["square", "circle"] },
     "size": { "type": "integer", "minimum": 1 },
+    "labelColor": { "$ref": "#/$defs/hexColor" },
     "output": { "type": "string" }
   },
   "required": ["dots"],
