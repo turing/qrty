@@ -39,6 +39,8 @@ export interface Profile {
   image?: string;
   /** Auto-select a logo from the encoded URL's domain (see data/icon-map.json). */
   autoIcon?: boolean;
+  /** Recolor the logo (fills + strokes) to the QR's foreground color. */
+  recolorIcon?: boolean;
   imageOptions?: {
     imageSize?: number;
     margin?: number;

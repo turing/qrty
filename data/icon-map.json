@@ -43,16 +43,15 @@
   { "url": "https://cdn.simpleicons.org/applepodcasts",  "match": ["podcasts.apple.com", "podcasts"] },
   { "url": "https://cdn.simpleicons.org/appstore",       "match": ["apps.apple.com", "appstore"] },
 
-  { "url": "https://raw.githubusercontent.com/xandemon/developer-icons/main/icons/linkedin.svg",  "match": ["linkedin.com", "linkedin"] },
-  { "url": "https://raw.githubusercontent.com/xandemon/developer-icons/main/icons/microsoft.svg", "match": ["microsoft.com", "microsoftonline.com", "live.com", "msn.com", "microsoft", "msn"] },
-  { "url": "https://raw.githubusercontent.com/xandemon/developer-icons/main/icons/bing.svg",      "match": ["bing.com", "bing"] },
-  { "url": "https://raw.githubusercontent.com/xandemon/developer-icons/main/icons/slack.svg",     "match": ["slack.com", "slack"] },
-
-  { "url": "https://cdn.jim-nielsen.com/ios/1024/amazon-shopping-2021-03-02.png?rf=1024", "match": ["amazon.com", "amazon"] },
-
-  { "url": "https://play-lh.googleusercontent.com/MdvwCO_2tr5mKEE0Z0BWbS5MYFwLHtu_BcTxq7LnmBB1WYksurJAwoUeCX7HlVNIOojABqhzKTS4n3kwwTevCcI=w480-h960-rw", "match": ["craigslist.org", "craigslist"] },
-  { "url": "https://cdn.jim-nielsen.com/ios/1024/microsoft-office-2020-02-26.png?rf=1024",     "match": ["office.com", "office"] },
-  { "url": "https://cdn.jim-nielsen.com/ios/1024/microsoft-excel-2025-10-27.png?rf=1024",      "match": ["excel"] },
-  { "url": "https://cdn.jim-nielsen.com/ios/1024/microsoft-word-2025-10-27.png?rf=1024",       "match": ["word"] },
-  { "url": "https://cdn.jim-nielsen.com/ios/1024/microsoft-powerpoint-2025-10-27.png?rf=1024", "match": ["powerpoint"] }
+  { "url": "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/amazon-black-icon.svg",   "match": ["amazon.com", "amazon"] },
+  { "url": "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/linkedin-square-icon.svg", "match": ["linkedin.com", "linkedin"] },
+  { "url": "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/microsoft-icon.svg",       "match": ["microsoft.com", "microsoftonline.com", "live.com", "msn.com", "microsoft", "msn"] },
+  { "url": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Bing_Fluent_Logo.svg",         "match": ["bing.com", "bing"] },
+  { "url": "https://upload.wikimedia.org/wikipedia/commons/d/d5/Slack_icon_2019.svg",          "match": ["slack.com", "slack"] },
+  { "url": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Microsoft_365_%282022%29.svg", "match": ["office.com", "office"] },
+  { "url": "https://upload.wikimedia.org/wikipedia/commons/0/07/Craigslist_icon.svg",          "match": ["craigslist.org", "craigslist"] },
+  { "url": "https://api-img.icons8.com/?id=K6UH0aYK0gNV&format=svg&size=50&name=icons8-microsoft-word-2025.svg&fromSite=true",       "match": ["word"] },
+  { "url": "https://api-img.icons8.com/?id=eITB1Wwun62W&format=svg&size=50&name=icons8-microsoft-excel-2025.svg&fromSite=true",      "match": ["excel"] },
+  { "url": "https://api-img.icons8.com/?id=TVIBipkrtzU6&format=svg&size=50&name=icons8-microsoft-powerpoint-2025.svg&fromSite=true", "match": ["powerpoint"] },
+  { "url": "https://api-img.icons8.com/?id=BUBSlePETFM1&format=svg&size=50&name=icons8-microsoft-teams-2025.svg&fromSite=true",      "match": ["teams.microsoft.com", "teams"] }
 ]

@@ -153,6 +153,13 @@ Detection matches the host (most specific first: `docs.google.com` before
 plain image URLs (SVG from Simple Icons / developer-icons — canvas-free; raster
 from iOS Icon Gallery — needs `canvas`), so the map is easy to extend.
 
+A profile's `recolorIcon: true` paints the logo the QR's **foreground color**
+(the dots color) — Simple Icons via the CDN's color param, other SVGs via a
+fill/stroke filter, so a colored brand logo prints as one flat color (e.g. white
+on a dark code). `auto-black` ships with it on. Icons that rely on knockout /
+negative space (a filled badge with a cut-out glyph) flatten to a solid shape —
+pick a solid-glyph icon for those.
+
 List every supported selection:
 
     qrgen icons
@@ -209,7 +216,8 @@ Auto-icon sources (`data/icon-map.json`):
 
 - [Simple Icons](https://simpleicons.org) — most brand SVGs.
 - [xandemon/developer-icons](https://github.com/xandemon/developer-icons).
-- [iOS Icon Gallery](https://www.iosicongallery.com) (Jim Nielsen) — app icons.
+- [uxwing](https://uxwing.com), [Icons8](https://icons8.com), and
+  [Wikimedia Commons](https://commons.wikimedia.org) — brand/app SVGs.
 - App URL scheme reference: **app-urls** by Bhagya Nirmaan Silva
   ([bhagyas/app-urls](https://github.com/bhagyas/app-urls)).
 
