@@ -232,9 +232,10 @@ into the code) that can't be regenerated from the payload alone.
 
 - `--restyle <path>` **replaces** the `<url>` argument — passing both is an error.
 - Composes with `--png`, `--size`, and `--label` exactly like a normal render.
-- **Input:** a clean, axis-aligned QR **image** (e.g. a generated PNG) with a
-  quiet-zone border. Photos, skewed scans, or noisy images are rejected with a
-  clear error — qrgen never guesses a grid.
+- **Input:** `--restyle` expects a **generated QR image** — an app export,
+  screenshot, or QArt PNG: clean, flat, axis-aligned, with a quiet-zone border.
+  It is **not** for photographs of QR codes (camera angle, lens warp, or noise);
+  such images are rejected with a clear error rather than guessed.
 - Reads the native `canvas` package (same dependency as `--png`), used to sample
   the image.
 
