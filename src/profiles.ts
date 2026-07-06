@@ -95,6 +95,14 @@ export function loadProfile(
   name: string,
   dirs: string | string[] = SEARCH_DIRS,
 ): Profile {
+  // The name becomes a filename (`<name>.json`) and is embedded in the output
+  // stem, so restrict it to a safe basename — no path separators or traversal.
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(name)) {
+    throw new QrgenError(
+      `Invalid profile name '${name}': use letters, digits, '.', '_', '-' ` +
+        `(no path separators).`,
+    );
+  }
   const searchDirs = Array.isArray(dirs) ? dirs : [dirs];
   const path = searchDirs
     .map((d) => join(d, `${name}.json`))
