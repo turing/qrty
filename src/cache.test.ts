@@ -150,6 +150,17 @@ test("trimCache is a no-op under the ceiling and on a missing dir", () => {
   assert.doesNotThrow(() => trimCache(join(dir, "nope"), 10)); // missing dir
 });
 
+test("trimCache sweeps an orphan .type sidecar (no matching body)", () => {
+  const dir = mkdtempSync(join(tmpdir(), "qrgen-trim-"));
+  writeFileSync(join(dir, "deadkey.type"), "image/png\n"); // orphan — no body
+  writeFileSync(join(dir, "live"), Buffer.alloc(10));
+  writeFileSync(join(dir, "live.type"), "image/png\n");
+  trimCache(dir, 1_000_000); // under the ceiling; orphan still swept
+  assert.equal(existsSync(join(dir, "deadkey.type")), false);
+  assert.equal(existsSync(join(dir, "live")), true);
+  assert.equal(existsSync(join(dir, "live.type")), true);
+});
+
 test("clearCache empties the directory and reports what it freed", async () => {
   const cacheDir = tmpCacheDir();
   const orig = globalThis.fetch;
