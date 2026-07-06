@@ -48,6 +48,22 @@ test("http url is fetched and inlined; svg content-type is not raster", async ()
   }
 });
 
+test("svg body under a non-image content-type is sniffed as svg, not raster", async () => {
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-img-cache-"));
+  const orig = globalThis.fetch;
+  globalThis.fetch = (async () =>
+    new Response("<svg xmlns='http://www.w3.org/2000/svg'/>", {
+      headers: { "content-type": "application/octet-stream" },
+    })) as typeof fetch;
+  try {
+    const r = await resolveImage("https://example.com/icon.svg", { cacheDir });
+    assert.ok(r.image.startsWith("data:image/svg+xml;base64,"));
+    assert.equal(r.isRaster, false);
+  } finally {
+    globalThis.fetch = orig;
+  }
+});
+
 test("http url failure throws QrgenError", async () => {
   const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-img-cache-"));
   const orig = globalThis.fetch;
