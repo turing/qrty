@@ -8,6 +8,7 @@ import {
   writeCacheEntry,
 } from "./cache.ts";
 import { QrgenError } from "./errors.ts";
+import { fetchOrThrow } from "./fetch.ts";
 import { expandHome } from "./paths.ts";
 
 const MIME: Record<string, string> = {
@@ -113,17 +114,7 @@ export async function fetchAsset(
   const hit = readCacheEntry(key, dir);
   if (hit) return hit;
 
-  let res: Response;
-  try {
-    res = await fetch(url);
-  } catch (err) {
-    throw new QrgenError(
-      `Could not fetch logo ${url}: ${(err as Error).message}`,
-    );
-  }
-  if (!res.ok) {
-    throw new QrgenError(`Could not fetch logo ${url}: HTTP ${res.status}`);
-  }
+  const res = await fetchOrThrow(url, `logo ${url}`);
   const headerType = (res.headers.get("content-type") ?? "")
     .split(";")[0]
     .trim();
