@@ -22,6 +22,24 @@ test("renders an svg buffer", async () => {
   assert.match(svg, /<\/svg>/);
 });
 
+test("--size arg overrides profile size", async () => {
+  const svg = (
+    await renderSvg({ ...P, size: 300 }, "https://x.com", 900)
+  ).toString("utf8");
+  assert.match(svg, /width="900"/);
+  assert.doesNotMatch(svg, /width="300"/);
+});
+
+test("profile size applies when no size arg is given", async () => {
+  const svg = (await renderSvg({ ...P, size: 300 }, "https://x.com")).toString("utf8");
+  assert.match(svg, /width="300"/);
+});
+
+test("defaults to 1024 with no size arg and no profile size", async () => {
+  const svg = (await renderSvg(P, "https://x.com")).toString("utf8");
+  assert.match(svg, /width="1024"/);
+});
+
 test("svg reflects the background color", async () => {
   const svg = (
     await renderSvg({ ...P, background: { color: "#123456" } }, "https://x.com")

@@ -1,10 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readdirSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { clearCache } from "./cache.ts";
+import { clearCache, cacheKey, tempName } from "./cache.ts";
 import { fetchAsset } from "./image.ts";
 import { QrgenError } from "./errors.ts";
 
@@ -82,6 +82,42 @@ test("fetchAsset rejects a non-2xx response and caches nothing", async () => {
       /Could not fetch/,
     );
     assert.deepEqual(readdirSync(cacheDir), []);
+  } finally {
+    globalThis.fetch = orig;
+  }
+});
+
+test("tempName yields a distinct name on every call for the same key", () => {
+  const key = cacheKey("https://example.com/icon.svg");
+  const names = new Set([tempName(key), tempName(key), tempName(key)]);
+  assert.equal(names.size, 3, "concurrent writers must not share a temp name");
+  for (const n of names) assert.ok(n.endsWith(".tmp") && n.startsWith(key));
+});
+
+test("concurrent fetchAsset writes leave the cached body intact and no tmp", async () => {
+  const cacheDir = tmpCacheDir();
+  const orig = globalThis.fetch;
+  const body = "<svg xmlns='http://www.w3.org/2000/svg'/>";
+  globalThis.fetch = (async () =>
+    new Response(body, {
+      headers: { "content-type": "image/svg+xml" },
+    })) as typeof fetch;
+  try {
+    const url = "https://example.com/icon.svg";
+    const results = await Promise.all(
+      Array.from({ length: 8 }, () => fetchAsset(url, { cacheDir })),
+    );
+    for (const r of results) {
+      assert.equal(r.bytes.toString("utf8"), body);
+    }
+    const key = cacheKey(url);
+    const cached = readFileSync(join(cacheDir, key), "utf8");
+    assert.equal(cached, body, "promoted cache body must be byte-for-byte the response");
+    assert.deepEqual(
+      readdirSync(cacheDir).filter((n) => n.endsWith(".tmp")),
+      [],
+      "no leftover temp files after concurrent writes",
+    );
   } finally {
     globalThis.fetch = orig;
   }
