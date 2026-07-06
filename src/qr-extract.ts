@@ -72,6 +72,11 @@ export function extractMatrix(pngPath: string): boolean[][] {
   const img = new canvas.Image();
   img.src = pngPath;
   const { width, height } = img;
+  // A file that exists but isn't a decodable image loads to 0×0 (and would make
+  // drawImage throw a raw error); surface a QrgenError instead.
+  if (!width || !height) {
+    throw new QrgenError(`Could not read an image from ${pngPath}.`);
+  }
 
   const surface = canvas.createCanvas(width, height);
   const ctx = surface.getContext("2d");

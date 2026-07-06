@@ -130,3 +130,9 @@ test("extractMatrix throws QrgenError on garbage (no coherent grid)", () => {
   writeFileSync(file, c.toBuffer("image/png"));
   assert.throws(() => extractMatrix(file), QrgenError);
 });
+
+test("extractMatrix throws QrgenError on a corrupt (non-image) file", () => {
+  const file = tmpPngPath("corrupt.png");
+  writeFileSync(file, Buffer.from("this is not a decodable image")); // exists, not an image
+  assert.throws(() => extractMatrix(file), QrgenError);
+});
