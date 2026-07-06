@@ -1,10 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { renderSvg, renderPng, labelPng } from "./render.ts";
+import { cacheKey, defaultCacheDir } from "./cache.ts";
 import type { Profile } from "./profiles.ts";
 
 const P: Profile = {
@@ -25,6 +26,11 @@ test("recolorIcon recolors a non-Simple-Icons SVG logo via the fill filter", asy
     image: "https://example.invalid/icon.svg",
     recolorIcon: true,
   };
+  // Guarantee a cache miss so the mock (not a stale ~/.qrgen/cache entry) is used.
+  const key = cacheKey("https://example.invalid/icon.svg");
+  for (const f of [key, `${key}.type`]) {
+    try { rmSync(join(defaultCacheDir(), f)); } catch { /* absent */ }
+  }
   const orig = globalThis.fetch;
   globalThis.fetch = (async () =>
     new Response(
