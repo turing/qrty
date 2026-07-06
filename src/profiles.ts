@@ -60,11 +60,17 @@ export interface Profile {
 const ajv = new Ajv2020({ allErrors: true });
 const validate = ajv.compile(schema);
 
-function assertReadableContrast(profile: Profile, where: string): void {
+/**
+ * Reject a profile whose background is an exact (case-insensitive) match for a
+ * foreground (dots/corner) color — the common footgun of leaving both the same.
+ * This is a string-equality guard, NOT a luminance/contrast computation:
+ * near-identical colors (e.g. `#000001` on `#000000`) are not caught.
+ */
+function assertForegroundBackgroundDiffer(profile: Profile, where: string): void {
   // A gradient background has no single color to compare; skip it.
   if (profile.background && !profile.background.color) return;
   // qr-code-styling defaults an omitted background to white, so an omitted
-  // background is effectively white for contrast purposes.
+  // background is treated as white for this comparison.
   const bg = (profile.background?.color ?? "#ffffff").toLowerCase();
   if (bg === "transparent") return;
   const foregrounds = [
@@ -83,7 +89,7 @@ function assertReadableContrast(profile: Profile, where: string): void {
 /**
  * Load `<name>.json`, searching `dirs` in order (first match wins, so a `user/`
  * profile overrides a `default/` one of the same name). Validates against the
- * schema and rejects unreadable (foreground == background) profiles.
+ * schema and rejects profiles whose background equals a foreground color.
  */
 export function loadProfile(
   name: string,
@@ -115,6 +121,6 @@ export function loadProfile(
   }
 
   const profile = data as unknown as Profile;
-  assertReadableContrast(profile, `Profile ${path}`);
+  assertForegroundBackgroundDiffer(profile, `Profile ${path}`);
   return profile;
 }
