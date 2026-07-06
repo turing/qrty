@@ -84,6 +84,19 @@ export function trimCache(dir: string, maxBytes: number = DEFAULT_MAX_CACHE_BYTE
       bodies.push({ key: name, mtimeMs: st.mtimeMs });
     }
   }
+  // Sweep orphan `.type` sidecars (their body is already gone) so they can't
+  // count against the ceiling forever.
+  const bodyKeys = new Set(bodies.map((b) => b.key));
+  for (const name of names) {
+    if (name.endsWith(".type") && !bodyKeys.has(name.slice(0, -5))) {
+      try {
+        rmSync(join(dir, name));
+        total -= size.get(name) ?? 0;
+      } catch {
+        // already gone
+      }
+    }
+  }
   if (total <= maxBytes) return;
   bodies.sort((a, b) => a.mtimeMs - b.mtimeMs); // oldest first
   for (const { key } of bodies) {

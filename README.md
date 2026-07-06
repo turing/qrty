@@ -200,11 +200,10 @@ with HTTP 200 (some CDNs do this) is rejected, never stored. There is no expiry
 (Label fonts keep their own cache at `~/.qrgen/fonts/`.)
 
 **Fetch limits.** Every remote fetch (icons, profile `image` URLs, label fonts)
-is `http`/`https` only, times out after 10 seconds, and is capped at 16 MiB;
-cloud instance-metadata hosts (e.g. `169.254.169.254`) are blocked. qrgen does
-**not** block general private or loopback addresses — a profile's `image` URL is
-fetched as given, so treat profiles from untrusted sources like any untrusted
-code.
+is `http`/`https` only and times out after 10 seconds. A body larger than 5 MB
+prints a warning but still downloads in full. qrgen does **not** restrict which
+hosts a URL may resolve to — a profile's `image` URL is fetched as given, so
+treat profiles from untrusted sources like any untrusted code.
 
 ## PNG output
 

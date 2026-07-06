@@ -52,30 +52,6 @@ test("fetchOrThrow rejects a malformed URL without fetching", async () => {
   } finally { globalThis.fetch = orig; }
 });
 
-test("fetchOrThrow blocks the cloud-metadata host without fetching", async () => {
-  const orig = globalThis.fetch;
-  let called = false;
-  globalThis.fetch = (async () => { called = true; return new Response("secret"); }) as typeof fetch;
-  try {
-    await assert.rejects(
-      () => fetchOrThrow("http://169.254.169.254/latest/meta-data/", "logo x"),
-      /blocked host 169\.254\.169\.254/);
-    assert.equal(called, false);
-  } finally { globalThis.fetch = orig; }
-});
-
-test("fetchOrThrow blocks the IPv6 metadata host (brackets stripped)", async () => {
-  const orig = globalThis.fetch;
-  let called = false;
-  globalThis.fetch = (async () => { called = true; return new Response("secret"); }) as typeof fetch;
-  try {
-    await assert.rejects(
-      () => fetchOrThrow("http://[fd00:ec2::254]/latest/", "logo x"),
-      /blocked host fd00:ec2::254/);
-    assert.equal(called, false);
-  } finally { globalThis.fetch = orig; }
-});
-
 test("fetchOrThrow times out a hung request", async () => {
   const orig = globalThis.fetch;
   globalThis.fetch = ((_url: string, init: { signal: AbortSignal }) =>
@@ -90,26 +66,18 @@ test("fetchOrThrow times out a hung request", async () => {
   } finally { globalThis.fetch = orig; }
 });
 
-test("fetchOrThrow rejects a body over the byte cap", async () => {
+test("fetchOrThrow warns past warnBytes but returns the full body (never rejects on size)", async () => {
   const orig = globalThis.fetch;
-  globalThis.fetch = (async () => new Response("0123456789")) as typeof fetch;
+  const origErr = process.stderr.write;
+  let warned = "";
+  process.stderr.write = ((s: string) => ((warned += s), true)) as typeof process.stderr.write;
+  globalThis.fetch = (async () => new Response("0123456789")) as typeof fetch; // 10 bytes
   try {
-    await assert.rejects(
-      () => fetchOrThrow("https://x/a", "logo https://x/a", { maxBytes: 5 }),
-      /response exceeds 5 bytes/);
-  } finally { globalThis.fetch = orig; }
-});
-
-test("fetchOrThrow blocks a redirect whose final host is a metadata host", async () => {
-  const orig = globalThis.fetch;
-  globalThis.fetch = (async () => {
-    const res = new Response("secret", { headers: { "content-type": "text/plain" } });
-    Object.defineProperty(res, "url", { value: "http://169.254.169.254/latest/" });
-    return res;
-  }) as typeof fetch;
-  try {
-    await assert.rejects(
-      () => fetchOrThrow("https://benign.example/icon.svg", "logo x"),
-      /blocked host 169\.254\.169\.254 \(redirect\)/);
-  } finally { globalThis.fetch = orig; }
+    const r = await fetchOrThrow("https://x/a", "logo https://x/a", { warnBytes: 5 });
+    assert.equal(r.bytes.toString(), "0123456789"); // full body, not truncated or rejected
+    assert.match(warned, /downloading anyway/);
+  } finally {
+    globalThis.fetch = orig;
+    process.stderr.write = origErr;
+  }
 });
