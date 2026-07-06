@@ -48,6 +48,32 @@ test("run 'cache' with an unknown subcommand errors", async () => {
   assert.match(err, /cache/);
 });
 
+test("run 'icons' lists selections", async () => {
+  const { code, out } = await captureRun(["icons"]);
+  assert.equal(code, 0);
+  assert.match(out, /youtube/);
+});
+
+test("--help lists the icons and cache subcommands", async () => {
+  const { code, out } = await captureRun(["--help"]);
+  assert.equal(code, 0);
+  assert.match(out, /\bicons\b/);
+  assert.match(out, /\bcache\b/);
+});
+
+test("'icons --help' prints help, not the selection list", async () => {
+  const { code, out } = await captureRun(["icons", "--help"]);
+  assert.equal(code, 0);
+  assert.match(out, /Usage: qrgen icons/);
+  assert.doesNotMatch(out, /simpleicons\.org/); // not the icon list
+});
+
+test("run 'cache clear' reports what it freed", async () => {
+  const { code, out } = await captureRun(["cache", "clear"]);
+  assert.equal(code, 0);
+  assert.match(out, /Cleared \d+ cached asset\(s\), freed \d+ bytes\./);
+});
+
 test("resolveOutputDir precedence: flag > profile > default", () => {
   const p = { output: "./prof" } as Profile;
   assert.equal(resolveOutputDir("/flag", p), "/flag");
