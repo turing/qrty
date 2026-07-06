@@ -36,19 +36,26 @@ export interface GenerateOptions {
   size?: number;
   /** Caption below the QR; color comes from the profile's labelColor. */
   label?: string;
+}
+
+export interface GenerateDeps {
   /** Where to seed starters (defaults to ~/.qrgen/profiles/default). */
   defaultDir?: string;
   /** Profile lookup order (defaults to [user, default]). */
   searchDirs?: string[];
+  /** Prompt to install starters when missing (defaults to stdin.isTTY). */
   interactive?: boolean;
 }
 
-export async function generate(opts: GenerateOptions): Promise<string[]> {
-  await ensureProfilesDir(opts.defaultDir ?? DEFAULT_DIR, {
-    interactive: opts.interactive ?? Boolean(process.stdin.isTTY),
+export async function generate(
+  opts: GenerateOptions,
+  deps: GenerateDeps = {},
+): Promise<string[]> {
+  await ensureProfilesDir(deps.defaultDir ?? DEFAULT_DIR, {
+    interactive: deps.interactive ?? Boolean(process.stdin.isTTY),
   });
 
-  const profile = loadProfile(opts.profile, opts.searchDirs ?? SEARCH_DIRS);
+  const profile = loadProfile(opts.profile, deps.searchDirs ?? SEARCH_DIRS);
   const stem = deriveStem(opts.url, opts.profile);
   const dir = resolveOutputDir(opts.output, profile);
   mkdirSync(dir, { recursive: true });

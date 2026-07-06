@@ -90,14 +90,10 @@ test("expandHome expands a leading ~", () => {
 test("generate writes <label>-<profile>-<hash>-qr.svg only by default", async () => {
   const { defaultDir, searchDirs } = seededProfiles();
   const out = outDir();
-  const written = await generate({
-    profile: "black",
-    url: "https://youtube.com",
-    output: out,
-    defaultDir,
-    searchDirs,
-    interactive: false,
-  });
+  const written = await generate(
+    { profile: "black", url: "https://youtube.com", output: out },
+    { defaultDir, searchDirs, interactive: false },
+  );
   assert.equal(written.length, 1);
   const files = readdirSync(out);
   assert.deepEqual(files.map((f) => f.replace(/\.svg$/, "")).length, 1);
@@ -107,14 +103,10 @@ test("generate writes <label>-<profile>-<hash>-qr.svg only by default", async ()
 test("returns a fully-qualified absolute path", async () => {
   const { defaultDir, searchDirs } = seededProfiles();
   const out = outDir();
-  const [svg] = await generate({
-    profile: "black",
-    url: "https://youtube.com",
-    output: out,
-    defaultDir,
-    searchDirs,
-    interactive: false,
-  });
+  const [svg] = await generate(
+    { profile: "black", url: "https://youtube.com", output: out },
+    { defaultDir, searchDirs, interactive: false },
+  );
   assert.ok(isAbsolute(svg), `expected absolute path, got ${svg}`);
   assert.ok(existsSync(svg));
 });
@@ -125,14 +117,10 @@ test("a relative output dir is resolved to an absolute path", async () => {
   const prev = process.cwd();
   try {
     process.chdir(cwd);
-    const [svg] = await generate({
-      profile: "white",
-      url: "https://x.com",
-      output: "out",
-      defaultDir,
-      searchDirs,
-      interactive: false,
-    });
+    const [svg] = await generate(
+      { profile: "white", url: "https://x.com", output: "out" },
+      { defaultDir, searchDirs, interactive: false },
+    );
     assert.ok(isAbsolute(svg), `expected absolute path, got ${svg}`);
     assert.ok(existsSync(svg));
   } finally {
@@ -143,15 +131,10 @@ test("a relative output dir is resolved to an absolute path", async () => {
 test("generate --png writes both svg and png", async () => {
   const { defaultDir, searchDirs } = seededProfiles();
   const out = outDir();
-  await generate({
-    profile: "white",
-    url: "https://youtube.com",
-    output: out,
-    png: true,
-    defaultDir,
-    searchDirs,
-    interactive: false,
-  });
+  await generate(
+    { profile: "white", url: "https://youtube.com", output: out, png: true },
+    { defaultDir, searchDirs, interactive: false },
+  );
   const files = readdirSync(out);
   assert.equal(files.length, 2);
   assert.ok(files.some((f) => f.endsWith(".png")));
