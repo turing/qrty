@@ -51,7 +51,7 @@ export function tempName(key: string): string {
   return `${key}.${process.pid}.${randomBytes(6).toString("hex")}.tmp`;
 }
 
-/** Store an asset atomically: `<key>.tmp` → rename, plus a `<key>.type` sidecar. */
+/** Store an asset atomically: unique temp file → rename, plus a `<key>.type` sidecar. */
 export function writeCacheEntry(key: string, entry: CacheEntry, dir: string): void {
   mkdirSync(dir, { recursive: true });
   const tmp = join(dir, tempName(key));
