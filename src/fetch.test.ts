@@ -99,3 +99,17 @@ test("fetchOrThrow rejects a body over the byte cap", async () => {
       /response exceeds 5 bytes/);
   } finally { globalThis.fetch = orig; }
 });
+
+test("fetchOrThrow blocks a redirect whose final host is a metadata host", async () => {
+  const orig = globalThis.fetch;
+  globalThis.fetch = (async () => {
+    const res = new Response("secret", { headers: { "content-type": "text/plain" } });
+    Object.defineProperty(res, "url", { value: "http://169.254.169.254/latest/" });
+    return res;
+  }) as typeof fetch;
+  try {
+    await assert.rejects(
+      () => fetchOrThrow("https://benign.example/icon.svg", "logo x"),
+      /blocked host 169\.254\.169\.254 \(redirect\)/);
+  } finally { globalThis.fetch = orig; }
+});
