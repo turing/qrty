@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, realpathSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,7 +11,7 @@ import { QrgenError } from "./errors.ts";
 import { ensureFontFile, fontFaceCss, fontFamily } from "./fonts.ts";
 import { listSelections } from "./icons.ts";
 import { addLabel } from "./label.ts";
-import { deriveStem } from "./naming.ts";
+import { deriveStem, restyleStem } from "./naming.ts";
 import { expandHome } from "./paths.ts";
 import {
   DEFAULT_DIR,
@@ -19,7 +19,15 @@ import {
   loadProfile,
   type Profile,
 } from "./profiles.ts";
-import { labelPng, renderPng, renderSvg } from "./render.ts";
+import { extractMatrix } from "./qr-extract.ts";
+import {
+  DEFAULT_SIZE,
+  labelPng,
+  renderPng,
+  renderRestyleSvg,
+  renderSvg,
+  svgToPng,
+} from "./render.ts";
 
 export function resolveOutputDir(
   flag: string | undefined,
@@ -30,7 +38,10 @@ export function resolveOutputDir(
 
 export interface GenerateOptions {
   profile: string;
-  url: string;
+  /** Required unless `restyle` is set. */
+  url?: string;
+  /** Reproduce an existing QR image's module grid in this profile's style. */
+  restyle?: string;
   output?: string;
   png?: boolean;
   size?: number;
@@ -56,7 +67,6 @@ export async function generate(
   });
 
   const profile = loadProfile(opts.profile, deps.searchDirs ?? SEARCH_DIRS);
-  const stem = deriveStem(opts.url, opts.profile);
   const dir = resolveOutputDir(opts.output, profile);
   mkdirSync(dir, { recursive: true });
 
@@ -64,7 +74,23 @@ export async function generate(
     profile.labelColor ?? profile.dots.color ?? "#000000";
   const labelBg = profile.background?.color;
 
-  let svg = (await renderSvg(profile, opts.url, opts.size)).toString("utf8");
+  let stem: string;
+  let qrSvg: string;
+  let restylePx: number | undefined;
+  if (opts.restyle) {
+    if (!existsSync(opts.restyle)) {
+      throw new QrgenError(`Restyle image not found: ${opts.restyle}`);
+    }
+    stem = restyleStem(opts.restyle, opts.profile);
+    restylePx = opts.size ?? profile.size ?? DEFAULT_SIZE;
+    const matrix = extractMatrix(opts.restyle);
+    qrSvg = await renderRestyleSvg(profile, matrix, restylePx);
+  } else {
+    stem = deriveStem(opts.url ?? "", opts.profile);
+    qrSvg = (await renderSvg(profile, opts.url ?? "", opts.size)).toString("utf8");
+  }
+
+  let svg = qrSvg;
   if (opts.label) {
     const font = profile.labelFont
       ? {
@@ -86,7 +112,9 @@ export async function generate(
   written.push(resolve(svgPath));
 
   if (opts.png) {
-    let png = await renderPng(profile, opts.url, opts.size);
+    let png = opts.restyle
+      ? await svgToPng(qrSvg, restylePx as number)
+      : await renderPng(profile, opts.url ?? "", opts.size);
     if (opts.label) {
       const font = profile.labelFont
         ? {
@@ -118,22 +146,36 @@ export async function run(argv: string[]): Promise<number> {
 
   program
     .argument("<profile>", "profile name (~/.qrgen/profiles/<profile>.json)")
-    .argument("<url>", "URL to encode")
+    .argument("[url]", "URL to encode")
     .option("-o, --output <dir>", "output directory (overrides the profile)")
     .option("--png", "also write a PNG next to the SVG")
     .option("--size <px>", "image size in pixels", (v) => Number.parseInt(v, 10))
     .option("--label <text>", "caption below the QR (color set by the profile)")
+    .option("--restyle <path>", "reproduce an existing QR image in this profile's style")
     .action(
       async (
         profile: string,
-        url: string,
-        opts: { output?: string; png?: boolean; size?: number; label?: string },
+        url: string | undefined,
+        opts: {
+          output?: string;
+          png?: boolean;
+          size?: number;
+          label?: string;
+          restyle?: string;
+        },
       ) => {
         // A QrgenError (or anything else) thrown here surfaces as a parseAsync
         // rejection and is classified in the single catch below.
+        if (opts.restyle && url) {
+          throw new QrgenError("--restyle cannot be combined with a <url>.");
+        }
+        if (!opts.restyle && !url) {
+          throw new QrgenError("a <url> is required (or use --restyle <path>).");
+        }
         const written = await generate({
           profile,
           url,
+          restyle: opts.restyle,
           output: opts.output,
           png: opts.png,
           size: opts.size,

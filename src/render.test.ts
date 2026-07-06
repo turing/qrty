@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { renderSvg, renderPng, labelPng } from "./render.ts";
+import { renderSvg, renderPng, labelPng, renderRestyleSvg } from "./render.ts";
 import { cacheKey, defaultCacheDir } from "./cache.ts";
 import type { Profile } from "./profiles.ts";
 
@@ -47,6 +47,19 @@ test("recolorIcon recolors a non-Simple-Icons SVG logo via the fill filter", asy
   } finally {
     globalThis.fetch = orig;
   }
+});
+
+test("renderRestyleSvg renders an injected matrix in the profile style", async () => {
+  const n = 21;
+  const dense = Array.from({ length: n }, () => Array.from({ length: n }, () => true));
+  const sparse = Array.from({ length: n }, () => Array.from({ length: n }, () => false));
+  const count = (s: string) => (s.match(/<rect|<circle|<path/g) || []).length;
+  const svgDense = await renderRestyleSvg(P, dense, 210);
+  const svgSparse = await renderRestyleSvg(P, sparse, 210);
+  // the injected matrix drives the render: a full matrix has far more dot
+  // elements than an empty one (finder corners are equal in both).
+  assert.ok(count(svgDense) > count(svgSparse) + 100, "matrix drives the render");
+  assert.match(svgDense, /width="210"/);
 });
 
 test("renders an svg buffer", async () => {

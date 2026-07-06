@@ -214,6 +214,37 @@ approve it (`npm approve-scripts canvas`). If `canvas` is unavailable, `--png`
 exits with a clear message and the SVG is still written. SVG output never needs
 `canvas`.
 
+## Restyle an existing QR (`--restyle`)
+
+    qrgen <profile> --restyle <path-to-qr-image>
+
+Reproduces an existing QR **bit-for-bit** — every module copied exactly — and
+re-renders it in a profile's style (dot shape, colors/gradients, and the
+profile's finder-corner styling). Because it copies the exact module grid rather
+than re-encoding the data, it preserves **artistic QR patterns** (a shape blended
+into the code) that can't be regenerated from the payload alone.
+
+    qrgen black --restyle qart.png            # restyle in the black profile
+    qrgen ocean --restyle qart.png -o ~/Desktop --png --label "scan me"
+
+- `--restyle <path>` **replaces** the `<url>` argument — passing both is an error.
+- Composes with `--png`, `--size`, and `--label` exactly like a normal render.
+- **Input:** a clean, axis-aligned QR **image** (e.g. a generated PNG) with a
+  quiet-zone border. Photos, skewed scans, or noisy images are rejected with a
+  clear error — qrgen never guesses a grid.
+- Reads the native `canvas` package (same dependency as `--png`), used to sample
+  the image.
+
+A great front end for making base codes — including artistic ones — is Russ Cox's
+**QArt Coder**: <https://research.swtch.com/qr/draw/>. Draw or encode a QR there,
+then `--restyle` it.
+
+The copied matrix is rendered through the **same styling engine as a normal
+render**, so every profile feature — dot shapes (including `classy`), gradients,
+and finder-corner styles — comes out identical to `qrgen <profile> <url>`. The
+three finder patterns are drawn as the profile's styled corners; every other
+module carries the profile's dot style.
+
 ## Tests
 
     npm test        # node:test, runs the TypeScript sources directly

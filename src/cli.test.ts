@@ -140,3 +140,27 @@ test("generate --png writes both svg and png", async () => {
   assert.ok(files.some((f) => f.endsWith(".png")));
   assert.ok(files.some((f) => f.endsWith(".svg")));
 });
+
+test("--restyle cannot be combined with a <url>", async () => {
+  const { code, err } = await captureRun(["black", "https://x", "--restyle", "/p"]);
+  assert.equal(code, 2);
+  assert.match(err, /cannot be combined/);
+});
+
+test("no <url> and no --restyle errors", async () => {
+  const { code, err } = await captureRun(["black"]);
+  assert.equal(code, 2);
+  assert.match(err, /required/);
+});
+
+test("generate --restyle rejects a missing image", async () => {
+  const { defaultDir, searchDirs } = seededProfiles();
+  const out = outDir();
+  await assert.rejects(
+    generate(
+      { profile: "black", restyle: "/no/such.png", output: out },
+      { defaultDir, searchDirs, interactive: false },
+    ),
+    /not found/,
+  );
+});
