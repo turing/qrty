@@ -72,8 +72,8 @@ export async function ensureFontFile(
   const dir = opts.cacheDir ?? CACHE;
   const path = join(dir, f.file);
   if (existsSync(path)) return path;
-  const res = await fetchOrThrow(f.url, `font ${name}`);
-  atomicWrite(path, Buffer.from(await res.arrayBuffer()));
+  const { bytes } = await fetchOrThrow(f.url, `font ${name}`);
+  atomicWrite(path, bytes);
   return path;
 }
 

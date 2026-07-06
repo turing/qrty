@@ -114,13 +114,10 @@ export async function fetchAsset(
   const hit = readCacheEntry(key, dir);
   if (hit) return hit;
 
-  const res = await fetchOrThrow(url, `logo ${url}`);
-  const headerType = (res.headers.get("content-type") ?? "")
-    .split(";")[0]
-    .trim();
+  const { bytes, contentType } = await fetchOrThrow(url, `logo ${url}`);
+  const headerType = contentType.split(";")[0].trim();
   const ext = extname(new URL(url).pathname).toLowerCase();
   const headerMime = headerType || MIME[ext] || "";
-  const bytes = Buffer.from(await res.arrayBuffer());
 
   // Trust an explicit `image/*` header; otherwise let the body's magic bytes
   // decide, so a real image served under `application/octet-stream` or
