@@ -41,10 +41,10 @@ function requireCanvas(): unknown {
 async function toOptions(
   profile: Profile,
   url: string,
-  size: number,
+  size: number | undefined,
   type: Backend,
 ): Promise<Partial<Options>> {
-  const px = profile.size ?? size;
+  const px = size ?? profile.size ?? DEFAULT_SIZE;
   const options: Record<string, unknown> = {
     jsdom: JSDOM,
     type,
@@ -97,7 +97,7 @@ async function toOptions(
 export async function renderSvg(
   profile: Profile,
   url: string,
-  size: number = DEFAULT_SIZE,
+  size?: number,
 ): Promise<Buffer> {
   const qr = new QRCodeStyling(await toOptions(profile, url, size, "svg"));
   return (await qr.getRawData("svg")) as Buffer;
@@ -106,7 +106,7 @@ export async function renderSvg(
 export async function renderPng(
   profile: Profile,
   url: string,
-  size: number = DEFAULT_SIZE,
+  size?: number,
 ): Promise<Buffer> {
   const qr = new QRCodeStyling(await toOptions(profile, url, size, "canvas"));
   return (await qr.getRawData("png")) as Buffer;
