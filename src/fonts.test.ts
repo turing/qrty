@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, existsSync } from "node:fs";
+import { mkdtempSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -49,6 +49,20 @@ test("ensureFontFile rejects a non-2xx and writes nothing", async () => {
       /Could not fetch font Roboto: HTTP 500/,
     );
     assert.equal(existsSync(join(cacheDir, "Roboto.ttf")), false);
+  } finally {
+    globalThis.fetch = orig;
+  }
+});
+
+test("ensureFontFile sweeps a stale .tmp from a crashed prior write", async () => {
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-font-"));
+  writeFileSync(join(cacheDir, "Roboto.ttf.999.deadbeef.tmp"), "junk"); // stale orphan
+  const orig = globalThis.fetch;
+  globalThis.fetch = (async () => new Response("TTFDATA", { status: 200 })) as typeof fetch;
+  try {
+    const p = await ensureFontFile("Roboto", { cacheDir });
+    assert.equal(existsSync(join(cacheDir, "Roboto.ttf.999.deadbeef.tmp")), false); // swept
+    assert.equal(existsSync(p), true);
   } finally {
     globalThis.fetch = orig;
   }

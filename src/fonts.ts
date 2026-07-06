@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 import subsetFont from "subset-font";
@@ -73,6 +73,15 @@ export async function ensureFontFile(
   const path = join(dir, f.file);
   if (existsSync(path)) return path;
   const { bytes } = await fetchOrThrow(f.url, `font ${name}`);
+  // Sweep any stale temp orphaned by a crashed prior write (atomicWrite writes
+  // `<file>.<pid>.<rand>.tmp` then renames); this dir has no other cleaner.
+  try {
+    for (const n of readdirSync(dir)) {
+      if (n.startsWith(`${f.file}.`) && n.endsWith(".tmp")) rmSync(join(dir, n));
+    }
+  } catch {
+    // dir absent — atomicWrite will create it; nothing to sweep
+  }
   atomicWrite(path, bytes);
   return path;
 }
