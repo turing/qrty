@@ -25,8 +25,8 @@ On first run, if `~/.qrgen/profiles/` does not exist, `qrgen` offers to create
 it and install the bundled starter profiles (and the schema) — answer the prompt:
 
     qrgen black https://youtube.com
-    # No profiles directory at ~/.qrgen/profiles. Create it and install the
-    # starter profiles? [Y/n] y
+    # No profiles found in ~/.qrgen/profiles/default. Install the starter
+    # profiles? [Y/n] y
     # → ./output/youtube-black-1467931a0e8c-qr.svg
 
 In a non-interactive context (piped/scripted) it will not prompt; create the

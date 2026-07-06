@@ -22,8 +22,8 @@ const ASSETS = join(ROOT, "assets");
  * Seed the bundled starter profiles into `defaultDir` (…/profiles/default),
  * create the sibling `user/`, and place shared assets: the JSON schema at
  * …/profiles/profile.schema.json (so `"$schema": "../profile.schema.json"`
- * resolves from either default/ or user/) and the placeholder logo at
- * ~/.qrgen/logo.svg. Returns the installed profile file names.
+ * resolves from either default/ or user/) and the bundled sample images under
+ * ~/.qrgen/assets/default/. Returns the installed profile file names.
  */
 export function installStarterProfiles(defaultDir: string): string[] {
   const profilesRoot = dirname(defaultDir); // …/.qrgen/profiles
