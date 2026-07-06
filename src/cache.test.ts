@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { clearCache, cacheKey, tempName } from "./cache.ts";
+import { clearCache, cacheKey } from "./cache.ts";
 import { fetchAsset } from "./image.ts";
 import { QrgenError } from "./errors.ts";
 
@@ -85,13 +85,6 @@ test("fetchAsset rejects a non-2xx response and caches nothing", async () => {
   } finally {
     globalThis.fetch = orig;
   }
-});
-
-test("tempName yields a distinct name on every call for the same key", () => {
-  const key = cacheKey("https://example.com/icon.svg");
-  const names = new Set([tempName(key), tempName(key), tempName(key)]);
-  assert.equal(names.size, 3, "concurrent writers must not share a temp name");
-  for (const n of names) assert.ok(n.endsWith(".tmp") && n.startsWith(key));
 });
 
 test("concurrent fetchAsset writes leave the cached body intact and no tmp", async () => {

@@ -1,9 +1,7 @@
-import { createHash, randomBytes } from "node:crypto";
+import { createHash } from "node:crypto";
 import {
-  mkdirSync,
   readFileSync,
   readdirSync,
-  renameSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -11,6 +9,7 @@ import {
 import { join } from "node:path";
 
 import { qrgenHome } from "./paths.ts";
+import { atomicWrite } from "./fs.ts";
 
 /** Where remote assets are cached (created on first write). */
 export function defaultCacheDir(): string {
@@ -42,22 +41,9 @@ export function readCacheEntry(key: string, dir: string): CacheEntry | undefined
   }
 }
 
-/**
- * Temp filename for an in-progress write of `key`. UNIQUE per call (pid + random
- * suffix) so two concurrent in-process writers of the same URL never share a
- * temp file — neither can rename a file the other is mid-write on. Still ends in
- * `.tmp`, so `clearCache` sweeps abandoned temps.
- */
-export function tempName(key: string): string {
-  return `${key}.${process.pid}.${randomBytes(6).toString("hex")}.tmp`;
-}
-
 /** Store an asset atomically: unique temp file → rename, plus a `<key>.type` sidecar. */
 export function writeCacheEntry(key: string, entry: CacheEntry, dir: string): void {
-  mkdirSync(dir, { recursive: true });
-  const tmp = join(dir, tempName(key));
-  writeFileSync(tmp, entry.bytes);
-  renameSync(tmp, join(dir, key));
+  atomicWrite(join(dir, key), entry.bytes);
   writeFileSync(join(dir, `${key}.type`), `${entry.mime}\n`);
 }
 
