@@ -15,7 +15,12 @@ export function recolorSvg(svg: string, color: string): string {
   return out;
 }
 
-/** Recolor an `image/svg+xml` data URI; other data URIs pass through unchanged. */
+/**
+ * Recolor an `image/svg+xml` data URI; other data URIs pass through unchanged.
+ * `resolveImage` normalizes any well-formed SVG data URI to base64, so the
+ * non-base64 branch here only fires for a malformed data URI that fell through
+ * unchanged from `resolveImage` (a pre-existing, unrecolored passthrough).
+ */
 export function recolorSvgDataUri(dataUri: string, color: string): string {
   const m = dataUri.match(/^data:image\/svg\+xml;base64,(.*)$/);
   if (!m) return dataUri;

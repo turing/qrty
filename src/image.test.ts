@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { cacheKey } from "./cache.ts";
 import { fetchAsset, resolveImage } from "./image.ts";
 import { QrgenError } from "./errors.ts";
+import { recolorSvgDataUri } from "./recolor.ts";
 
 function tmpFile(name: string, body = "x"): string {
   const p = join(mkdtempSync(join(tmpdir(), "qrgen-img-")), name);
@@ -87,6 +88,48 @@ test("missing file throws QrgenError", async () => {
 test("unsupported extension throws QrgenError", async () => {
   const p = tmpFile("logo.bmp", "x");
   await assert.rejects(() => resolveImage(p), /Unsupported/);
+});
+
+const VB_ONLY = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M0,0h24v24H0z'/></svg>";
+
+function decodeDataUriSvg(image: string): string | null {
+  const m = image.match(/^data:image\/svg\+xml;base64,(.*)$/);
+  return m ? Buffer.from(m[1], "base64").toString("utf8") : null;
+}
+
+test("a base64 viewBox-only SVG data URI gets width/height injected", async () => {
+  const uri = `data:image/svg+xml;base64,${Buffer.from(VB_ONLY).toString("base64")}`;
+  const r = await resolveImage(uri);
+  assert.equal(r.isRaster, false);
+  assert.ok(r.image.startsWith("data:image/svg+xml;base64,"));
+  const svg = decodeDataUriSvg(r.image);
+  assert.match(svg!, /width="1024"/);
+  assert.match(svg!, /height="1024"/);
+});
+
+test("a raw (non-base64) SVG data URI is normalized and re-encoded to base64", async () => {
+  const uri = `data:image/svg+xml,${encodeURIComponent(VB_ONLY)}`;
+  const r = await resolveImage(uri);
+  assert.equal(r.isRaster, false);
+  assert.ok(r.image.startsWith("data:image/svg+xml;base64,")); // now base64
+  assert.match(decodeDataUriSvg(r.image)!, /width="1024"/);
+});
+
+test("a raw SVG data URI, once resolved, is recolorable end-to-end", async () => {
+  // double-quoted attrs: recolorSvg (unchanged) only rewrites double-quoted fills
+  const uri = `data:image/svg+xml,${encodeURIComponent('<svg viewBox="0 0 24 24"><path fill="#123456" d="M0,0h24v24H0z"/></svg>')}`;
+  const { image } = await resolveImage(uri);
+  const recolored = recolorSvgDataUri(image, "#ff0000");
+  const svg = Buffer.from(recolored.match(/;base64,(.*)$/)![1], "base64").toString("utf8");
+  assert.match(svg, /#ff0000/);
+  assert.doesNotMatch(svg, /#123456/);
+});
+
+test("a malformed SVG data URI falls back to passthrough without throwing", async () => {
+  const uri = "data:image/svg+xml,%E0%A4%A"; // bad percent-escape
+  const r = await resolveImage(uri);
+  assert.equal(r.isRaster, false);
+  assert.equal(r.image, uri); // unchanged
 });
 
 test("fetchAsset trims the cache to maxCacheBytes, evicting the oldest", async () => {

@@ -59,6 +59,23 @@ function normalizeSvgSize(svg: string, target = ICON_TARGET_PX): string {
   return svg.replace(tag, newTag);
 }
 
+/**
+ * Decode the SVG text from a `data:image/svg+xml` URI — base64 (`;base64,`) or
+ * utf8/percent-encoded — or `null` if the URI is malformed. Only called for URIs
+ * already known to start with `data:image/svg+xml`.
+ */
+function decodeSvgDataUri(uri: string): string | null {
+  const m = uri.match(/^data:image\/svg\+xml([^,]*),([\s\S]*)$/i);
+  if (!m) return null;
+  try {
+    return /;base64/i.test(m[1])
+      ? Buffer.from(m[2], "base64").toString("utf8")
+      : decodeURIComponent(m[2]);
+  } catch {
+    return null;
+  }
+}
+
 function toDataUri(mime: string, bytes: Buffer): ResolvedImage {
   if (mime === "image/svg+xml") {
     const svg = normalizeSvgSize(bytes.toString("utf8"));
@@ -154,6 +171,11 @@ export async function resolveImage(
   opts: FetchAssetOptions = {},
 ): Promise<ResolvedImage> {
   if (image.startsWith("data:")) {
+    if (image.startsWith("data:image/svg+xml")) {
+      const svg = decodeSvgDataUri(image);
+      if (svg !== null) return toDataUri("image/svg+xml", Buffer.from(svg, "utf8"));
+      // malformed → fall through to verbatim passthrough
+    }
     return { image, isRaster: !image.startsWith("data:image/svg+xml") };
   }
 
