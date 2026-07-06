@@ -21,8 +21,6 @@ import {
 } from "./profiles.ts";
 import { labelPng, renderPng, renderSvg } from "./render.ts";
 
-export { expandHome };
-
 export function resolveOutputDir(
   flag: string | undefined,
   profile: Profile,

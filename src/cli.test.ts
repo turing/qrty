@@ -4,7 +4,8 @@ import { existsSync, mkdtempSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { isAbsolute, join } from "node:path";
 
-import { generate, resolveOutputDir, expandHome, run } from "./cli.ts";
+import { generate, resolveOutputDir, run } from "./cli.ts";
+import { expandHome } from "./paths.ts";
 import { installStarterProfiles } from "./bootstrap.ts";
 import { defaultCacheDir } from "./cache.ts";
 import type { Profile } from "./profiles.ts";
