@@ -23,7 +23,7 @@ interface QRCtor {
 const require = createRequire(import.meta.url);
 const QRCodeStyling = require("qr-code-styling") as QRCtor;
 
-const DEFAULT_SIZE = 1024;
+export const DEFAULT_SIZE = 1024;
 
 type Backend = "svg" | "canvas";
 
@@ -119,6 +119,7 @@ interface CanvasCtx {
   textBaseline: string;
   fillRect(x: number, y: number, w: number, h: number): void;
   drawImage(img: unknown, x: number, y: number): void;
+  drawImage(img: unknown, x: number, y: number, w: number, h: number): void;
   measureText(s: string): { width: number };
   fillText(s: string, x: number, y: number): void;
 }
@@ -130,6 +131,18 @@ interface CanvasModule {
   loadImage(src: Buffer): Promise<{ width: number; height: number }>;
   createCanvas(w: number, h: number): CanvasLike;
   registerFont(path: string, opts: { family: string }): void;
+}
+
+/**
+ * Rasterize an SVG string to a `px`x`px` PNG. Used by the --restyle path,
+ * which has no qr-code-styling instance to rasterize through.
+ */
+export async function svgToPng(svg: string, px: number): Promise<Buffer> {
+  const canvas = requireCanvas() as CanvasModule;
+  const img = await canvas.loadImage(Buffer.from(svg));
+  const c = canvas.createCanvas(px, px);
+  c.getContext("2d").drawImage(img, 0, 0, px, px);
+  return c.toBuffer("image/png");
 }
 
 // node-canvas ships no fonts; register a system one once, else text is tofu.
