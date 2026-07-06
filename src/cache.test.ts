@@ -1,10 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, readdirSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  utimesSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { clearCache, cacheKey } from "./cache.ts";
+import { clearCache, cacheKey, trimCache } from "./cache.ts";
 import { fetchAsset } from "./image.ts";
 import { QrgenError } from "./errors.ts";
 
@@ -114,6 +121,33 @@ test("concurrent fetchAsset writes leave the cached body intact and no tmp", asy
   } finally {
     globalThis.fetch = orig;
   }
+});
+
+test("trimCache evicts oldest entries (body + sidecar) until under the ceiling", () => {
+  const dir = mkdtempSync(join(tmpdir(), "qrgen-trim-"));
+  const keys = ["aaa", "bbb", "ccc"]; // will set aaa oldest → ccc newest
+  keys.forEach((k, i) => {
+    writeFileSync(join(dir, k), Buffer.alloc(100));      // 100-byte body
+    writeFileSync(join(dir, `${k}.type`), "image/png\n"); // 10-byte sidecar
+    const t = new Date((i + 1) * 100000);
+    utimesSync(join(dir, k), t, t);
+    utimesSync(join(dir, `${k}.type`), t, t);
+  });
+  // total = 3 * 110 = 330; ceiling 250 forces evicting the single oldest (aaa)
+  trimCache(dir, 250);
+  assert.equal(existsSync(join(dir, "aaa")), false);
+  assert.equal(existsSync(join(dir, "aaa.type")), false);
+  assert.equal(existsSync(join(dir, "bbb")), true);
+  assert.equal(existsSync(join(dir, "ccc")), true);
+});
+
+test("trimCache is a no-op under the ceiling and on a missing dir", () => {
+  const dir = mkdtempSync(join(tmpdir(), "qrgen-trim-"));
+  writeFileSync(join(dir, "k"), Buffer.alloc(10));
+  writeFileSync(join(dir, "k.type"), "image/png\n");
+  trimCache(dir, 1_000_000);
+  assert.equal(existsSync(join(dir, "k")), true);
+  assert.doesNotThrow(() => trimCache(join(dir, "nope"), 10)); // missing dir
 });
 
 test("clearCache empties the directory and reports what it freed", async () => {

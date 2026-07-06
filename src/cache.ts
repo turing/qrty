@@ -47,6 +47,58 @@ export function writeCacheEntry(key: string, entry: CacheEntry, dir: string): vo
   writeFileSync(join(dir, `${key}.type`), `${entry.mime}\n`);
 }
 
+export const DEFAULT_MAX_CACHE_BYTES = 256 * 1024 * 1024; // 256 MiB backstop
+
+/**
+ * Evict oldest entries (by body mtime) until the cache dir's total size is within
+ * `maxBytes`. Each entry is a `<key>` body plus its `<key>.type` sidecar, removed
+ * together. `.tmp` files (transient write temps, and orphans left by a write that
+ * failed mid-rename, e.g. ENOSPC) are ignored entirely — never counted toward the
+ * total and never evicted — so orphan cruft can never force real entries out;
+ * `clearCache` sweeps them. No-op when the dir is missing or already under the
+ * ceiling; best-effort (never throws on a vanished file). Ordering is by body
+ * mtime; on a coarse-resolution filesystem two same-tick writes tie and fall back
+ * to `readdir` order — acceptable, since eviction is a rare backstop event.
+ */
+export function trimCache(dir: string, maxBytes: number = DEFAULT_MAX_CACHE_BYTES): void {
+  let names: string[];
+  try {
+    names = readdirSync(dir);
+  } catch {
+    return;
+  }
+  let total = 0;
+  const size = new Map<string, number>();
+  const bodies: { key: string; mtimeMs: number }[] = [];
+  for (const name of names) {
+    if (name.endsWith(".tmp")) continue; // transient temp; ignore for the ceiling
+    let st;
+    try {
+      st = statSync(join(dir, name));
+    } catch {
+      continue;
+    }
+    total += st.size;
+    size.set(name, st.size);
+    if (!name.endsWith(".type")) {
+      bodies.push({ key: name, mtimeMs: st.mtimeMs });
+    }
+  }
+  if (total <= maxBytes) return;
+  bodies.sort((a, b) => a.mtimeMs - b.mtimeMs); // oldest first
+  for (const { key } of bodies) {
+    if (total <= maxBytes) break;
+    for (const f of [key, `${key}.type`]) {
+      try {
+        rmSync(join(dir, f));
+        total -= size.get(f) ?? 0;
+      } catch {
+        // already gone
+      }
+    }
+  }
+}
+
 export interface ClearResult {
   /** Cached assets removed (bodies, not `.type` sidecars). */
   entries: number;
