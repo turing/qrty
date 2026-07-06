@@ -77,7 +77,3 @@ export async function ensureFontFile(
   return path;
 }
 
-// exported for testing the cache read path
-export function readCachedFont(path: string): Buffer {
-  return readFileSync(path);
-}
