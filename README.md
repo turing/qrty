@@ -198,6 +198,13 @@ icon URLs are static.
 
 (Label fonts keep their own cache at `~/.qrgen/fonts/`.)
 
+**Fetch limits.** Every remote fetch (icons, profile `image` URLs, label fonts)
+is `http`/`https` only, times out after 10 seconds, and is capped at 16 MiB;
+cloud instance-metadata hosts (e.g. `169.254.169.254`) are blocked. qrgen does
+**not** block general private or loopback addresses — a profile's `image` URL is
+fetched as given, so treat profiles from untrusted sources like any untrusted
+code.
+
 ## PNG output
 
 The `--png` flag renders a PNG through qr-code-styling's canvas backend, which
