@@ -16,6 +16,33 @@ const P: Profile = {
 
 const CANVAS = await import("canvas").then(() => true).catch(() => false);
 
+test("recolorIcon recolors a non-Simple-Icons SVG logo via the fill filter", async () => {
+  // example.invalid never resolves/caches, so the mock is always used; the
+  // svg-filter recolor runs after the cache, forcing every fill to the color.
+  const profile: Profile = {
+    ...P,
+    dots: { type: "rounded", color: "#FF0000" },
+    image: "https://example.invalid/icon.svg",
+    recolorIcon: true,
+  };
+  const orig = globalThis.fetch;
+  globalThis.fetch = (async () =>
+    new Response(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#00ff00" d="M0 0h24v24H0z"/></svg>',
+      { headers: { "content-type": "image/svg+xml" } },
+    )) as typeof fetch;
+  try {
+    const svg = (await renderSvg(profile, "https://x.com", 100)).toString("utf8");
+    const m = svg.match(/data:image\/svg\+xml;base64,([A-Za-z0-9+/=]+)/);
+    assert.ok(m, "embedded svg logo data URI present");
+    const logo = Buffer.from(m[1], "base64").toString("utf8");
+    assert.match(logo, /#ff0000/i); // recolored to the dots color
+    assert.doesNotMatch(logo, /#00ff00/i); // original fill gone
+  } finally {
+    globalThis.fetch = orig;
+  }
+});
+
 test("renders an svg buffer", async () => {
   const svg = (await renderSvg(P, "https://youtube.com")).toString("utf8");
   assert.match(svg, /<svg/);
