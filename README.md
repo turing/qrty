@@ -239,9 +239,11 @@ A great front end for making base codes — including artistic ones — is Russ 
 **QArt Coder**: <https://research.swtch.com/qr/draw/>. Draw or encode a QR there,
 then `--restyle` it.
 
-Style note: the finder eyes use the profile's `cornersSquare`/`cornersDot` styles;
-`classy`/`classy-rounded` dot types currently render as `rounded` (a documented
-simplification — the connected-shape look is a future refinement).
+The copied matrix is rendered through the **same styling engine as a normal
+render**, so every profile feature — dot shapes (including `classy`), gradients,
+and finder-corner styles — comes out identical to `qrgen <profile> <url>`. The
+three finder patterns are drawn as the profile's styled corners; every other
+module carries the profile's dot style.
 
 ## Tests
 

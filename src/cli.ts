@@ -11,7 +11,6 @@ import { QrgenError } from "./errors.ts";
 import { ensureFontFile, fontFaceCss, fontFamily } from "./fonts.ts";
 import { listSelections } from "./icons.ts";
 import { addLabel } from "./label.ts";
-import { renderStyledMatrix } from "./matrix-render.ts";
 import { deriveStem, restyleStem } from "./naming.ts";
 import { expandHome } from "./paths.ts";
 import {
@@ -21,7 +20,14 @@ import {
   type Profile,
 } from "./profiles.ts";
 import { extractMatrix } from "./qr-extract.ts";
-import { DEFAULT_SIZE, labelPng, renderPng, renderSvg, svgToPng } from "./render.ts";
+import {
+  DEFAULT_SIZE,
+  labelPng,
+  renderPng,
+  renderRestyleSvg,
+  renderSvg,
+  svgToPng,
+} from "./render.ts";
 
 export function resolveOutputDir(
   flag: string | undefined,
@@ -78,7 +84,7 @@ export async function generate(
     stem = restyleStem(opts.restyle, opts.profile);
     restylePx = opts.size ?? profile.size ?? DEFAULT_SIZE;
     const matrix = extractMatrix(opts.restyle);
-    qrSvg = renderStyledMatrix(matrix, { ...profile, size: restylePx });
+    qrSvg = await renderRestyleSvg(profile, matrix, restylePx);
   } else {
     stem = deriveStem(opts.url ?? "", opts.profile);
     qrSvg = (await renderSvg(profile, opts.url ?? "", opts.size)).toString("utf8");

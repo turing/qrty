@@ -20,6 +20,16 @@ interface QRInstance {
 interface QRCtor {
   new (options: Partial<Options>): QRInstance;
 }
+// qr-code-styling builds its matrix from `data`; for --restyle we inject a
+// pre-extracted matrix by replacing `_qr` (whose consumed surface is only
+// getModuleCount()/isDark()) and re-running `_setupSvg()`. These members are
+// internal but typed in the package's .d.ts; pinned by the qr-code-styling version.
+interface QRInjectable extends QRInstance {
+  _qr?: { getModuleCount(): number; isDark(row: number, col: number): boolean };
+  _svg?: unknown;
+  _svgDrawingPromise?: Promise<void>;
+  _setupSvg(): void;
+}
 const require = createRequire(import.meta.url);
 const QRCodeStyling = require("qr-code-styling") as QRCtor;
 
@@ -110,6 +120,46 @@ export async function renderPng(
 ): Promise<Buffer> {
   const qr = new QRCodeStyling(await toOptions(profile, url, size, "canvas"));
   return (await qr.getRawData("png")) as Buffer;
+}
+
+/**
+ * Render an already-known module matrix in the profile's style (for `--restyle`),
+ * reusing qr-code-styling's full renderer. The three finder patterns are drawn as
+ * the profile's styled corners; every other dark module is a styled dot — so an
+ * artistic pattern is reproduced exactly, with real dot/gradient styling. Returns
+ * the SVG string (PNG goes through `svgToPng`).
+ */
+export async function renderRestyleSvg(
+  profile: Profile,
+  matrix: boolean[][],
+  size?: number,
+): Promise<string> {
+  const px = size ?? profile.size ?? DEFAULT_SIZE;
+  const n = matrix.length;
+  const options: Record<string, unknown> = {
+    jsdom: JSDOM,
+    type: "svg",
+    data: "0", // placeholder; replaced by the injected matrix below
+    width: px,
+    height: px,
+    margin: profile.margin ?? 0,
+    shape: profile.shape ?? "square",
+    qrOptions: { errorCorrectionLevel: profile.errorCorrectionLevel ?? "Q" },
+    dotsOptions: profile.dots,
+  };
+  if (profile.cornersSquare) options.cornersSquareOptions = profile.cornersSquare;
+  if (profile.cornersDot) options.cornersDotOptions = profile.cornersDot;
+  if (profile.background) options.backgroundOptions = profile.background;
+
+  const qr = new QRCodeStyling(
+    options as unknown as Partial<Options>,
+  ) as unknown as QRInjectable;
+  await qr.getRawData("svg"); // initial draw from the placeholder data
+  qr._qr = { getModuleCount: () => n, isDark: (r, c) => Boolean(matrix[r]?.[c]) };
+  qr._svg = undefined;
+  qr._setupSvg();
+  await qr._svgDrawingPromise;
+  return ((await qr.getRawData("svg")) as Buffer).toString("utf8");
 }
 
 interface CanvasCtx {
