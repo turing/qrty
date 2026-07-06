@@ -200,15 +200,18 @@ with HTTP 200 (some CDNs do this) is rejected, never stored. There is no expiry
 (Label fonts keep their own cache at `~/.qrgen/fonts/`.)
 
 **Fetch limits.** Every remote fetch (icons, profile `image` URLs, label fonts)
-is `http`/`https` only and times out after 10 seconds. A body larger than 5 MB
-prints a warning but still downloads in full. qrgen does **not** restrict which
-hosts a URL may resolve to — a profile's `image` URL is fetched as given, so
-treat profiles from untrusted sources like any untrusted code.
+is `http`/`https` only. The 10-second timeout bounds *getting the response* and
+any *stall* mid-download — not total time — so a large, steadily-progressing
+download completes (progress past 5 MB is printed to stderr); a server that stops
+sending is aborted. qrgen does **not** restrict which hosts a URL may resolve to —
+a profile's `image` URL is fetched as given, so treat profiles from untrusted
+sources like any untrusted code.
 
 ## PNG output
 
-The `--png` flag renders a PNG through qr-code-styling's canvas backend, which
-needs the native `canvas` package. It ships prebuilt binaries, so
+The `--png` flag renders a PNG through qr-code-styling's canvas backend (for a
+normal render) or by rasterizing the SVG with canvas (for `--restyle`) — either
+way it needs the native `canvas` package. It ships prebuilt binaries, so
 `npm install canvas` normally just works; if your setup blocks install scripts,
 approve it (`npm approve-scripts canvas`). If `canvas` is unavailable, `--png`
 exits with a clear message and the SVG is still written. SVG output never needs
