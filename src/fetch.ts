@@ -1,16 +1,17 @@
 import { QrgenError } from "./errors.ts";
 
-const DEFAULT_TIMEOUT_MS = 10_000;
-const WARN_BYTES = 5 * 1024 * 1024; // warn above 5 MiB, but never reject on size
+const DEFAULT_TIMEOUT_MS = 10_000; // response timeout AND per-chunk idle timeout
+const PROGRESS_BYTES = 5 * 1024 * 1024; // report progress past 5 MiB
 
 export interface FetchOptions {
-  timeoutMs?: number;
   /**
-   * Emit a one-time stderr warning once the body passes this many bytes
-   * (default 5 MiB). The download is NEVER rejected on size — it always
-   * completes.
+   * Timeout (ms) for the RESPONSE (time to headers) and for each idle gap while
+   * streaming the body (a stalled server aborts). NOT a total-download limit — a
+   * body of any size completes as long as data keeps arriving.
    */
-  warnBytes?: number;
+  timeoutMs?: number;
+  /** Report download progress to stderr once the body passes this many bytes (default 5 MiB). */
+  progressBytes?: number;
 }
 
 export interface FetchedBody {
@@ -21,11 +22,10 @@ export interface FetchedBody {
 
 /**
  * Fetch a URL and return its body, or throw a QrgenError. The single network
- * chokepoint: http/https only, and one AbortController bounds the whole request
- * (timeout). Body size is not limited — a body over `warnBytes` logs a one-time
- * stderr warning but still downloads in full. `label` is the full error
- * descriptor (`logo <url>` / `font <name>`), preserving the network/HTTP message
- * shapes.
+ * chokepoint: http/https only. The timeout bounds getting the response and each
+ * idle gap during streaming — it does NOT cap total size or total time, so large
+ * downloads complete (with stderr progress past `progressBytes`). `label` is the
+ * full error descriptor (`logo <url>` / `font <name>`).
  */
 export async function fetchOrThrow(
   url: string,
@@ -43,63 +43,80 @@ export async function fetchOrThrow(
   }
 
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  const warnBytes = opts.warnBytes ?? WARN_BYTES;
+  const progressBytes = opts.progressBytes ?? PROGRESS_BYTES;
+
+  // Response timeout: bound the wait for headers, then let the body stream freely.
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const respTimer = setTimeout(() => controller.abort(), timeoutMs);
+  let res: Response;
   try {
-    let res: Response;
-    try {
-      res = await fetch(url, { signal: controller.signal });
-    } catch (err) {
-      throw controller.signal.aborted
-        ? new QrgenError(`Could not fetch ${label}: timed out after ${timeoutMs}ms.`)
-        : new QrgenError(`Could not fetch ${label}: ${(err as Error).message}`);
-    }
-    if (!res.ok) {
-      throw new QrgenError(`Could not fetch ${label}: HTTP ${res.status}`);
-    }
-    const contentType = res.headers.get("content-type") ?? "";
-    const bytes = await readBody(res, label, timeoutMs, controller, warnBytes);
-    return { bytes, contentType };
-  } finally {
-    clearTimeout(timer);
+    res = await fetch(url, { signal: controller.signal });
+  } catch (err) {
+    clearTimeout(respTimer);
+    throw controller.signal.aborted
+      ? new QrgenError(`Could not fetch ${label}: no response within ${timeoutMs}ms.`)
+      : new QrgenError(`Could not fetch ${label}: ${(err as Error).message}`);
   }
+  clearTimeout(respTimer);
+  if (!res.ok) {
+    throw new QrgenError(`Could not fetch ${label}: HTTP ${res.status}`);
+  }
+
+  const contentType = res.headers.get("content-type") ?? "";
+  const bytes = await readBody(res, label, timeoutMs, controller, progressBytes);
+  return { bytes, contentType };
 }
 
-/** Read the full response body into a Buffer; warn once past `warnBytes`, never reject on size. */
+/**
+ * Read the whole body into a Buffer — no total size/time limit, so any size that
+ * keeps arriving completes. A gap longer than `idleMs` between chunks (a stalled
+ * server) aborts. Progress is reported to stderr past `progressBytes`.
+ */
 async function readBody(
   res: Response,
   label: string,
-  timeoutMs: number,
+  idleMs: number,
   controller: AbortController,
-  warnBytes: number,
+  progressBytes: number,
 ): Promise<Buffer> {
   const body = res.body;
   if (!body) return Buffer.alloc(0);
   const reader = body.getReader();
   const chunks: Buffer[] = [];
   let total = 0;
-  let warned = false;
-  try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      const buf = Buffer.from(value);
-      total += buf.length;
-      if (!warned && total > warnBytes) {
-        warned = true;
-        process.stderr.write(
-          `warning: ${label} exceeds ${Math.round(warnBytes / (1024 * 1024))} MB ` +
-            `— downloading anyway.\n`,
+  let nextReport = progressBytes;
+  for (;;) {
+    let idle: ReturnType<typeof setTimeout> | undefined;
+    const stall = new Promise<never>((_, reject) => {
+      idle = setTimeout(() => {
+        controller.abort(); // stop the underlying stream
+        reject(
+          new QrgenError(
+            `Could not fetch ${label}: download stalled (no data for ${idleMs}ms).`,
+          ),
         );
-      }
-      chunks.push(buf);
+      }, idleMs);
+    });
+    let done: boolean;
+    let value: Uint8Array | undefined;
+    try {
+      ({ done, value } = await Promise.race([reader.read(), stall]));
+    } catch (err) {
+      if (err instanceof QrgenError) throw err;
+      throw new QrgenError(`Could not fetch ${label}: ${(err as Error).message}`);
+    } finally {
+      if (idle) clearTimeout(idle);
     }
-  } catch (err) {
-    if (controller.signal.aborted) {
-      throw new QrgenError(`Could not fetch ${label}: timed out after ${timeoutMs}ms.`);
+    if (done) break;
+    const buf = Buffer.from(value as Uint8Array);
+    total += buf.length;
+    if (total >= nextReport) {
+      process.stderr.write(
+        `downloading ${label}: ${Math.round(total / (1024 * 1024))} MB…\n`,
+      );
+      nextReport = total + progressBytes;
     }
-    throw new QrgenError(`Could not fetch ${label}: ${(err as Error).message}`);
+    chunks.push(buf);
   }
   return Buffer.concat(chunks);
 }

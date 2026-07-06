@@ -52,7 +52,7 @@ test("fetchOrThrow rejects a malformed URL without fetching", async () => {
   } finally { globalThis.fetch = orig; }
 });
 
-test("fetchOrThrow times out a hung request", async () => {
+test("fetchOrThrow times out waiting for the response (not the download)", async () => {
   const orig = globalThis.fetch;
   globalThis.fetch = ((_url: string, init: { signal: AbortSignal }) =>
     new Promise((_resolve, reject) => {
@@ -62,20 +62,32 @@ test("fetchOrThrow times out a hung request", async () => {
   try {
     await assert.rejects(
       () => fetchOrThrow("https://x/a", "logo https://x/a", { timeoutMs: 20 }),
-      /timed out after 20ms/);
+      /no response within 20ms/);
   } finally { globalThis.fetch = orig; }
 });
 
-test("fetchOrThrow warns past warnBytes but returns the full body (never rejects on size)", async () => {
+test("fetchOrThrow aborts a stalled body (idle timeout), never a slow-but-progressing one", async () => {
+  const orig = globalThis.fetch;
+  // response arrives, then the body hangs forever (no chunk, never closes)
+  globalThis.fetch = (async () =>
+    new Response(new ReadableStream<Uint8Array>({ pull() { /* never enqueue/close */ } }))) as typeof fetch;
+  try {
+    await assert.rejects(
+      () => fetchOrThrow("https://x/a", "logo https://x/a", { timeoutMs: 25 }),
+      /download stalled \(no data for 25ms\)/);
+  } finally { globalThis.fetch = orig; }
+});
+
+test("fetchOrThrow reports progress past progressBytes but returns the full body (no size limit)", async () => {
   const orig = globalThis.fetch;
   const origErr = process.stderr.write;
-  let warned = "";
-  process.stderr.write = ((s: string) => ((warned += s), true)) as typeof process.stderr.write;
+  let out = "";
+  process.stderr.write = ((s: string) => ((out += s), true)) as typeof process.stderr.write;
   globalThis.fetch = (async () => new Response("0123456789")) as typeof fetch; // 10 bytes
   try {
-    const r = await fetchOrThrow("https://x/a", "logo https://x/a", { warnBytes: 5 });
-    assert.equal(r.bytes.toString(), "0123456789"); // full body, not truncated or rejected
-    assert.match(warned, /downloading anyway/);
+    const r = await fetchOrThrow("https://x/a", "logo https://x/a", { progressBytes: 5 });
+    assert.equal(r.bytes.toString(), "0123456789"); // full body, never truncated/rejected
+    assert.match(out, /downloading logo https:\/\/x\/a: \d+ MB/);
   } finally {
     globalThis.fetch = orig;
     process.stderr.write = origErr;
