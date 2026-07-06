@@ -8,7 +8,7 @@ import { QrgenError } from "./errors.ts";
 import { resolveAutoIconUrl } from "./icons.ts";
 import { resolveImage } from "./image.ts";
 import type { Profile } from "./profiles.ts";
-import { recolorSvgDataUri } from "./recolor.ts";
+import { recolorStrategy, recolorSvgDataUri, simpleIconsRecolorUrl } from "./recolor.ts";
 
 // qr-code-styling is CJS with an ESM .d.ts whose default export TypeScript
 // mis-resolves under NodeNext. Load the class via require and describe the
@@ -74,16 +74,16 @@ async function toOptions(
         profile.labelColor ??
         "#000000"
       : null;
-    const isSimpleIcons = imageSource.startsWith("https://cdn.simpleicons.org/");
+    const strategy = recolorStrategy(imageSource);
     const src =
-      recolor && isSimpleIcons
-        ? `${imageSource.replace(/\/+$/, "")}/${recolor.replace(/^#/, "")}`
+      recolor && strategy === "url-suffix"
+        ? simpleIconsRecolorUrl(imageSource, recolor)
         : imageSource;
 
     const { image, isRaster } = await resolveImage(src);
     // Simple Icons recolor via the URL above; other SVGs via our filter.
     options.image =
-      recolor && !isRaster && !isSimpleIcons
+      recolor && !isRaster && strategy === "svg-filter"
         ? recolorSvgDataUri(image, recolor)
         : image;
     if (profile.imageOptions) options.imageOptions = profile.imageOptions;
