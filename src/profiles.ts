@@ -1,11 +1,11 @@
 import { existsSync, readFileSync } from "node:fs";
-import { homedir } from "node:os";
 import { join } from "node:path";
 
 import { Ajv2020 } from "ajv/dist/2020.js";
 
 import schema from "../data/profile.schema.json" with { type: "json" };
 import { QrgenError } from "./errors.ts";
+import { qrgenHome } from "./paths.ts";
 import type {
   CornerDotType,
   CornerSquareType,
@@ -14,7 +14,7 @@ import type {
 } from "./styles.ts";
 
 /** ~/.qrgen/profiles — holds `default/` (ship-managed) and `user/` (yours). */
-export const PROFILES_ROOT = join(homedir(), ".qrgen", "profiles");
+export const PROFILES_ROOT = join(qrgenHome(), "profiles");
 export const DEFAULT_DIR = join(PROFILES_ROOT, "default");
 export const USER_DIR = join(PROFILES_ROOT, "user");
 /** Search order: user profiles override defaults of the same name. */

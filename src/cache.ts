@@ -8,12 +8,13 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { homedir } from "node:os";
 import { join } from "node:path";
+
+import { qrgenHome } from "./paths.ts";
 
 /** Where remote assets are cached (created on first write). */
 export function defaultCacheDir(): string {
-  return join(homedir(), ".qrgen", "cache");
+  return join(qrgenHome(), "cache");
 }
 
 /** Cache key for a URL: sha256 of the exact fetched URL (query + suffix). */

@@ -1,10 +1,10 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
 import { join } from "node:path";
 
 import subsetFont from "subset-font";
 
 import { QrgenError } from "./errors.ts";
+import { qrgenHome } from "./paths.ts";
 
 interface FontDef {
   family: string;
@@ -32,7 +32,7 @@ const FONTS: Record<string, FontDef> = {
 
 export const LABEL_FONTS = Object.keys(FONTS);
 
-const CACHE = join(homedir(), ".qrgen", "fonts");
+const CACHE = join(qrgenHome(), "fonts");
 
 function def(name: string): FontDef {
   const f = FONTS[name];
