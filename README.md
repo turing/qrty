@@ -190,8 +190,9 @@ Every remote image — auto icons (including recolored Simple Icons variants) an
 exact fetched URL. Each URL downloads once, then serves from disk: faster,
 offline after the first fetch, and no rate-limiting the icon sources on every
 render. Only genuine `2xx` image responses are cached — an HTML gate returned
-with HTTP 200 (some CDNs do this) is rejected, never stored. There is no expiry;
-icon URLs are static.
+with HTTP 200 (some CDNs do this) is rejected, never stored. There is no expiry
+(icon URLs are static), but the cache is bounded: once its total size passes
+~256 MiB, the oldest entries are evicted on write to keep it under the ceiling.
 
     qrgen cache path     # print the cache directory
     qrgen cache clear    # empty it (reports assets removed + bytes freed)

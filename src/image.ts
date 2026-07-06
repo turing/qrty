@@ -5,6 +5,7 @@ import {
   cacheKey,
   defaultCacheDir,
   readCacheEntry,
+  trimCache,
   writeCacheEntry,
 } from "./cache.ts";
 import { QrgenError } from "./errors.ts";
@@ -98,6 +99,8 @@ function sniffImageMime(bytes: Buffer): string | null {
 export interface FetchAssetOptions {
   /** Cache directory override (defaults to `~/.qrgen/cache`); injected in tests. */
   cacheDir?: string;
+  /** Cache-size ceiling in bytes (defaults to trimCache's DEFAULT_MAX_CACHE_BYTES); injected in tests. */
+  maxCacheBytes?: number;
 }
 
 /**
@@ -136,6 +139,7 @@ export async function fetchAsset(
   }
 
   writeCacheEntry(key, { bytes, mime }, dir);
+  trimCache(dir, opts.maxCacheBytes);
   return { bytes, mime };
 }
 

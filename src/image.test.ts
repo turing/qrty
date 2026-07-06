@@ -1,10 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readdirSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { resolveImage } from "./image.ts";
+import { cacheKey } from "./cache.ts";
+import { fetchAsset, resolveImage } from "./image.ts";
 import { QrgenError } from "./errors.ts";
 
 function tmpFile(name: string, body = "x"): string {
@@ -86,4 +87,26 @@ test("missing file throws QrgenError", async () => {
 test("unsupported extension throws QrgenError", async () => {
   const p = tmpFile("logo.bmp", "x");
   await assert.rejects(() => resolveImage(p), /Unsupported/);
+});
+
+test("fetchAsset trims the cache to maxCacheBytes, evicting the oldest", async () => {
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-trim-int-"));
+  const orig = globalThis.fetch;
+  globalThis.fetch = (async () =>
+    new Response("<svg/>", { headers: { "content-type": "image/svg+xml" } })) as typeof fetch;
+  try {
+    await fetchAsset("https://x/a.svg", { cacheDir, maxCacheBytes: 10_000_000 });
+    // backdate everything written so far so entry A is the oldest
+    for (const f of readdirSync(cacheDir)) {
+      const t = new Date(1000);
+      utimesSync(join(cacheDir, f), t, t);
+    }
+    // each entry ≈ 6-byte body + 14-byte sidecar = 20 bytes; ceiling 25 fits one
+    await fetchAsset("https://x/b.svg", { cacheDir, maxCacheBytes: 25 });
+    const files = readdirSync(cacheDir);
+    assert.equal(files.includes(cacheKey("https://x/a.svg")), false); // A evicted
+    assert.equal(files.includes(cacheKey("https://x/b.svg")), true);  // B kept
+  } finally {
+    globalThis.fetch = orig;
+  }
 });
