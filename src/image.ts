@@ -72,25 +72,26 @@ function toDataUri(mime: string, bytes: Buffer): ResolvedImage {
 }
 
 /**
- * Does the body look like an image? The header is not enough — svgrepo and
- * brandfetch answer HTTP 200 with an HTML gate, which must never be cached or
- * embedded. Trust an `image/*` MIME, else sniff the leading magic bytes.
+ * Sniff a body's leading magic bytes and return the canonical image MIME, or
+ * `null` if it is not a recognized image. The header alone is not enough —
+ * svgrepo and brandfetch answer HTTP 200 with an HTML gate (rejected here), and
+ * some hosts serve a real image under `application/octet-stream` or `text/plain`
+ * (corrected here). Covers svg/`<?xml`, PNG, JPEG, GIF, and RIFF…WEBP.
  */
-function looksLikeImage(mime: string, bytes: Buffer): boolean {
-  if (mime.startsWith("image/")) return true;
+function sniffImageMime(bytes: Buffer): string | null {
   const head = bytes.subarray(0, 12);
   const text = head.toString("utf8").trimStart().toLowerCase();
-  if (text.startsWith("<svg") || text.startsWith("<?xml")) return true;
+  if (text.startsWith("<svg") || text.startsWith("<?xml")) return "image/svg+xml";
   if (head[0] === 0x89 && head[1] === 0x50 && head[2] === 0x4e && head[3] === 0x47)
-    return true; // PNG
-  if (head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) return true; // JPEG
-  if (head.subarray(0, 4).toString("ascii") === "GIF8") return true; // GIF
+    return "image/png";
+  if (head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) return "image/jpeg";
+  if (head.subarray(0, 4).toString("ascii") === "GIF8") return "image/gif";
   if (
     head.subarray(0, 4).toString("ascii") === "RIFF" &&
     head.subarray(8, 12).toString("ascii") === "WEBP"
   )
-    return true; // WEBP
-  return false;
+    return "image/webp";
+  return null;
 }
 
 export interface FetchAssetOptions {
@@ -127,16 +128,25 @@ export async function fetchAsset(
     .split(";")[0]
     .trim();
   const ext = extname(new URL(url).pathname).toLowerCase();
-  const mime = headerType || MIME[ext] || "";
-  if (!mime) {
-    throw new QrgenError(`Could not determine logo type for ${url}.`);
-  }
+  const headerMime = headerType || MIME[ext] || "";
   const bytes = Buffer.from(await res.arrayBuffer());
-  if (!looksLikeImage(mime, bytes)) {
-    throw new QrgenError(
-      `Could not fetch logo ${url}: response was not an image.`,
-    );
+
+  // Trust an explicit `image/*` header; otherwise let the body's magic bytes
+  // decide, so a real image served under `application/octet-stream` or
+  // `text/plain` gets its canonical MIME instead of the wrong header value.
+  let mime: string;
+  if (headerMime.startsWith("image/")) {
+    mime = headerMime;
+  } else {
+    const sniffed = sniffImageMime(bytes);
+    if (!sniffed) {
+      throw new QrgenError(
+        `Could not fetch logo ${url}: response was not an image.`,
+      );
+    }
+    mime = sniffed;
   }
+
   writeCacheEntry(key, { bytes, mime }, dir);
   return { bytes, mime };
 }
