@@ -108,3 +108,10 @@ test("transparent background never conflicts with a foreground", () => {
   });
   assert.equal(loadProfile("clear", d).background?.color, "transparent");
 });
+
+test("a profile name with a path separator is rejected", () => {
+  const d = tmp();
+  assert.throws(() => loadProfile("../evil", d), /Invalid profile name/);
+  assert.throws(() => loadProfile("a/b", d), /Invalid profile name/);
+  assert.throws(() => loadProfile("", d), /Invalid profile name/);
+});

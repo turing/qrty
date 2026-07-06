@@ -1,10 +1,12 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import subsetFont from "subset-font";
 
 import { QrgenError } from "./errors.ts";
+import { qrgenHome } from "./paths.ts";
+import { fetchOrThrow } from "./fetch.ts";
+import { atomicWrite } from "./fs.ts";
 
 interface FontDef {
   family: string;
@@ -32,7 +34,7 @@ const FONTS: Record<string, FontDef> = {
 
 export const LABEL_FONTS = Object.keys(FONTS);
 
-const CACHE = join(homedir(), ".qrgen", "fonts");
+const CACHE = join(qrgenHome(), "fonts");
 
 function def(name: string): FontDef {
   const f = FONTS[name];
@@ -62,26 +64,16 @@ export async function fontFaceCss(name: string, text: string): Promise<string> {
 }
 
 /** Download (once) and cache the TTF; returns its path (for PNG registerFont). */
-export async function ensureFontFile(name: string): Promise<string> {
+export async function ensureFontFile(
+  name: string,
+  opts: { cacheDir?: string } = {},
+): Promise<string> {
   const f = def(name);
-  const path = join(CACHE, f.file);
+  const dir = opts.cacheDir ?? CACHE;
+  const path = join(dir, f.file);
   if (existsSync(path)) return path;
-
-  let res: Response;
-  try {
-    res = await fetch(f.url);
-  } catch (err) {
-    throw new QrgenError(`Could not fetch font ${name}: ${(err as Error).message}`);
-  }
-  if (!res.ok) {
-    throw new QrgenError(`Could not fetch font ${name}: HTTP ${res.status}`);
-  }
-  mkdirSync(CACHE, { recursive: true });
-  writeFileSync(path, Buffer.from(await res.arrayBuffer()));
+  const { bytes } = await fetchOrThrow(f.url, `font ${name}`);
+  atomicWrite(path, bytes);
   return path;
 }
 
-// exported for testing the cache read path
-export function readCachedFont(path: string): Buffer {
-  return readFileSync(path);
-}

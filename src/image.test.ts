@@ -1,11 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readdirSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { resolveImage } from "./image.ts";
+import { cacheKey } from "./cache.ts";
+import { fetchAsset, resolveImage } from "./image.ts";
 import { QrgenError } from "./errors.ts";
+import { recolorSvgDataUri } from "./recolor.ts";
 
 function tmpFile(name: string, body = "x"): string {
   const p = join(mkdtempSync(join(tmpdir(), "qrgen-img-")), name);
@@ -86,4 +88,68 @@ test("missing file throws QrgenError", async () => {
 test("unsupported extension throws QrgenError", async () => {
   const p = tmpFile("logo.bmp", "x");
   await assert.rejects(() => resolveImage(p), /Unsupported/);
+});
+
+const VB_ONLY = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M0,0h24v24H0z'/></svg>";
+
+function decodeDataUriSvg(image: string): string | null {
+  const m = image.match(/^data:image\/svg\+xml;base64,(.*)$/);
+  return m ? Buffer.from(m[1], "base64").toString("utf8") : null;
+}
+
+test("a base64 viewBox-only SVG data URI gets width/height injected", async () => {
+  const uri = `data:image/svg+xml;base64,${Buffer.from(VB_ONLY).toString("base64")}`;
+  const r = await resolveImage(uri);
+  assert.equal(r.isRaster, false);
+  assert.ok(r.image.startsWith("data:image/svg+xml;base64,"));
+  const svg = decodeDataUriSvg(r.image);
+  assert.match(svg!, /width="1024"/);
+  assert.match(svg!, /height="1024"/);
+});
+
+test("a raw (non-base64) SVG data URI is normalized and re-encoded to base64", async () => {
+  const uri = `data:image/svg+xml,${encodeURIComponent(VB_ONLY)}`;
+  const r = await resolveImage(uri);
+  assert.equal(r.isRaster, false);
+  assert.ok(r.image.startsWith("data:image/svg+xml;base64,")); // now base64
+  assert.match(decodeDataUriSvg(r.image)!, /width="1024"/);
+});
+
+test("a raw SVG data URI, once resolved, is recolorable end-to-end", async () => {
+  // double-quoted attrs: recolorSvg (unchanged) only rewrites double-quoted fills
+  const uri = `data:image/svg+xml,${encodeURIComponent('<svg viewBox="0 0 24 24"><path fill="#123456" d="M0,0h24v24H0z"/></svg>')}`;
+  const { image } = await resolveImage(uri);
+  const recolored = recolorSvgDataUri(image, "#ff0000");
+  const svg = Buffer.from(recolored.match(/;base64,(.*)$/)![1], "base64").toString("utf8");
+  assert.match(svg, /#ff0000/);
+  assert.doesNotMatch(svg, /#123456/);
+});
+
+test("a malformed SVG data URI falls back to passthrough without throwing", async () => {
+  const uri = "data:image/svg+xml,%E0%A4%A"; // bad percent-escape
+  const r = await resolveImage(uri);
+  assert.equal(r.isRaster, false);
+  assert.equal(r.image, uri); // unchanged
+});
+
+test("fetchAsset trims the cache to maxCacheBytes, evicting the oldest", async () => {
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-trim-int-"));
+  const orig = globalThis.fetch;
+  globalThis.fetch = (async () =>
+    new Response("<svg/>", { headers: { "content-type": "image/svg+xml" } })) as typeof fetch;
+  try {
+    await fetchAsset("https://x/a.svg", { cacheDir, maxCacheBytes: 10_000_000 });
+    // backdate everything written so far so entry A is the oldest
+    for (const f of readdirSync(cacheDir)) {
+      const t = new Date(1000);
+      utimesSync(join(cacheDir, f), t, t);
+    }
+    // each entry ≈ 6-byte body + 14-byte sidecar = 20 bytes; ceiling 25 fits one
+    await fetchAsset("https://x/b.svg", { cacheDir, maxCacheBytes: 25 });
+    const files = readdirSync(cacheDir);
+    assert.equal(files.includes(cacheKey("https://x/a.svg")), false); // A evicted
+    assert.equal(files.includes(cacheKey("https://x/b.svg")), true);  // B kept
+  } finally {
+    globalThis.fetch = orig;
+  }
 });

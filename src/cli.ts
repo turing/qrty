@@ -21,8 +21,6 @@ import {
 } from "./profiles.ts";
 import { labelPng, renderPng, renderSvg } from "./render.ts";
 
-export { expandHome };
-
 export function resolveOutputDir(
   flag: string | undefined,
   profile: Profile,
@@ -38,19 +36,26 @@ export interface GenerateOptions {
   size?: number;
   /** Caption below the QR; color comes from the profile's labelColor. */
   label?: string;
+}
+
+export interface GenerateDeps {
   /** Where to seed starters (defaults to ~/.qrgen/profiles/default). */
   defaultDir?: string;
   /** Profile lookup order (defaults to [user, default]). */
   searchDirs?: string[];
+  /** Prompt to install starters when missing (defaults to stdin.isTTY). */
   interactive?: boolean;
 }
 
-export async function generate(opts: GenerateOptions): Promise<string[]> {
-  await ensureProfilesDir(opts.defaultDir ?? DEFAULT_DIR, {
-    interactive: opts.interactive ?? Boolean(process.stdin.isTTY),
+export async function generate(
+  opts: GenerateOptions,
+  deps: GenerateDeps = {},
+): Promise<string[]> {
+  await ensureProfilesDir(deps.defaultDir ?? DEFAULT_DIR, {
+    interactive: deps.interactive ?? Boolean(process.stdin.isTTY),
   });
 
-  const profile = loadProfile(opts.profile, opts.searchDirs ?? SEARCH_DIRS);
+  const profile = loadProfile(opts.profile, deps.searchDirs ?? SEARCH_DIRS);
   const stem = deriveStem(opts.url, opts.profile);
   const dir = resolveOutputDir(opts.output, profile);
   mkdirSync(dir, { recursive: true });
@@ -104,80 +109,82 @@ export async function generate(opts: GenerateOptions): Promise<string[]> {
 }
 
 export async function run(argv: string[]): Promise<number> {
-  if (argv[0] === "icons") {
-    for (const { match, url } of listSelections()) {
-      process.stdout.write(`${match.padEnd(24)} ${url}\n`);
-    }
-    return 0;
-  }
-
-  if (argv[0] === "cache") {
-    const sub = argv[1];
-    if (sub === "path") {
-      process.stdout.write(`${defaultCacheDir()}\n`);
-      return 0;
-    }
-    if (sub === "clear") {
-      const { entries, bytes } = clearCache(defaultCacheDir());
-      process.stdout.write(
-        `Cleared ${entries} cached asset(s), freed ${bytes} bytes.\n`,
-      );
-      return 0;
-    }
-    process.stderr.write(
-      `error: unknown cache subcommand '${sub ?? ""}'. Use 'path' or 'clear'.\n`,
-    );
-    return 2;
-  }
-
   const program = new Command();
   program
     .name("qrgen")
     .description("Render a styled SVG (and optional PNG) QR code from a profile.")
+    .exitOverride()
+    .allowExcessArguments(false);
+
+  program
     .argument("<profile>", "profile name (~/.qrgen/profiles/<profile>.json)")
     .argument("<url>", "URL to encode")
     .option("-o, --output <dir>", "output directory (overrides the profile)")
     .option("--png", "also write a PNG next to the SVG")
     .option("--size <px>", "image size in pixels", (v) => Number.parseInt(v, 10))
     .option("--label <text>", "caption below the QR (color set by the profile)")
-    .allowExcessArguments(false)
-    .exitOverride();
+    .action(
+      async (
+        profile: string,
+        url: string,
+        opts: { output?: string; png?: boolean; size?: number; label?: string },
+      ) => {
+        // A QrgenError (or anything else) thrown here surfaces as a parseAsync
+        // rejection and is classified in the single catch below.
+        const written = await generate({
+          profile,
+          url,
+          output: opts.output,
+          png: opts.png,
+          size: opts.size,
+          label: opts.label,
+        });
+        for (const p of written) process.stdout.write(`${p}\n`);
+      },
+    );
 
-  let profile: string;
-  let url: string;
-  let opts: {
-    output?: string;
-    png?: boolean;
-    size?: number;
-    label?: string;
-  };
+  program
+    .command("icons")
+    .description("list every auto-icon selection (keyword -> url)")
+    .action(() => {
+      for (const { match, url } of listSelections()) {
+        process.stdout.write(`${match.padEnd(24)} ${url}\n`);
+      }
+    });
+
+  program
+    .command("cache")
+    .argument("<action>", "path | clear")
+    .description("manage the remote-asset cache (path | clear)")
+    .action((action: string) => {
+      if (action === "path") {
+        process.stdout.write(`${defaultCacheDir()}\n`);
+        return;
+      }
+      if (action === "clear") {
+        const { entries, bytes } = clearCache(defaultCacheDir());
+        process.stdout.write(
+          `Cleared ${entries} cached asset(s), freed ${bytes} bytes.\n`,
+        );
+        return;
+      }
+      throw new QrgenError(
+        `unknown cache subcommand '${action}'. Use 'path' or 'clear'.`,
+      );
+    });
+
   try {
-    program.parse(argv, { from: "user" });
-    [profile, url] = program.args as [string, string];
-    opts = program.opts();
+    await program.parseAsync(argv, { from: "user" });
   } catch (err) {
     // Usage/help/version already written by commander.
-    return err instanceof CommanderError ? err.exitCode : 2;
-  }
-
-  try {
-    const written = await generate({
-      profile,
-      url,
-      output: opts.output,
-      png: opts.png,
-      size: opts.size,
-      label: opts.label,
-    });
-    for (const p of written) process.stdout.write(`${p}\n`);
-    return 0;
-  } catch (err) {
+    if (err instanceof CommanderError) return err.exitCode;
     if (err instanceof QrgenError) {
       process.stderr.write(`error: ${err.message}\n`);
       return 2;
     }
-    throw err;
+    throw err; // unexpected — propagate exactly as before
   }
+  return 0;
 }
 
 export async function main(): Promise<void> {

@@ -25,8 +25,8 @@ On first run, if `~/.qrgen/profiles/` does not exist, `qrgen` offers to create
 it and install the bundled starter profiles (and the schema) — answer the prompt:
 
     qrgen black https://youtube.com
-    # No profiles directory at ~/.qrgen/profiles. Create it and install the
-    # starter profiles? [Y/n] y
+    # No profiles found in ~/.qrgen/profiles/default. Install the starter
+    # profiles? [Y/n] y
     # → ./output/youtube-black-1467931a0e8c-qr.svg
 
 In a non-interactive context (piped/scripted) it will not prompt; create the
@@ -190,13 +190,21 @@ Every remote image — auto icons (including recolored Simple Icons variants) an
 exact fetched URL. Each URL downloads once, then serves from disk: faster,
 offline after the first fetch, and no rate-limiting the icon sources on every
 render. Only genuine `2xx` image responses are cached — an HTML gate returned
-with HTTP 200 (some CDNs do this) is rejected, never stored. There is no expiry;
-icon URLs are static.
+with HTTP 200 (some CDNs do this) is rejected, never stored. There is no expiry
+(icon URLs are static), but the cache is bounded: once its total size passes
+~256 MiB, the oldest entries are evicted on write to keep it under the ceiling.
 
     qrgen cache path     # print the cache directory
     qrgen cache clear    # empty it (reports assets removed + bytes freed)
 
 (Label fonts keep their own cache at `~/.qrgen/fonts/`.)
+
+**Fetch limits.** Every remote fetch (icons, profile `image` URLs, label fonts)
+is `http`/`https` only, times out after 10 seconds, and is capped at 16 MiB;
+cloud instance-metadata hosts (e.g. `169.254.169.254`) are blocked. qrgen does
+**not** block general private or loopback addresses — a profile's `image` URL is
+fetched as given, so treat profiles from untrusted sources like any untrusted
+code.
 
 ## PNG output
 

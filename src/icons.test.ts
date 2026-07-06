@@ -33,3 +33,18 @@ test("listSelections returns keyword -> url pairs", () => {
   assert.ok(list.length > 30);
   assert.ok(list.every((e) => e.match && e.url.startsWith("http")));
 });
+
+test("bare-keyword overfit matches are removed", () => {
+  assert.equal(resolveAutoIconUrl("https://word.com/"), null);
+  assert.equal(resolveAutoIconUrl("https://excel.com/"), null);
+  assert.equal(resolveAutoIconUrl("https://powerpoint.com/"), null);
+});
+
+test("real office/teams domains still resolve", () => {
+  assert.ok(resolveAutoIconUrl("https://office.com/"));
+  assert.ok(resolveAutoIconUrl("https://teams.microsoft.com/"));
+});
+
+test("non-office.com label no longer matches office", () => {
+  assert.equal(resolveAutoIconUrl("https://office.io/"), null);
+});

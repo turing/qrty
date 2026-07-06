@@ -48,10 +48,7 @@
   { "url": "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/microsoft-icon.svg",       "match": ["microsoft.com", "microsoftonline.com", "live.com", "msn.com", "microsoft", "msn"] },
   { "url": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Bing_Fluent_Logo.svg",         "match": ["bing.com", "bing"] },
   { "url": "https://upload.wikimedia.org/wikipedia/commons/d/d5/Slack_icon_2019.svg",          "match": ["slack.com", "slack"] },
-  { "url": "https://api-img.icons8.com/?id=LE7eozgoRxc4&format=svg&size=50&name=icons8-microsoft-365.svg&fromSite=true", "match": ["office.com", "office"] },
+  { "url": "https://api-img.icons8.com/?id=LE7eozgoRxc4&format=svg&size=50&name=icons8-microsoft-365.svg&fromSite=true", "match": ["office.com"] },
   { "url": "https://upload.wikimedia.org/wikipedia/commons/0/07/Craigslist_icon.svg",          "match": ["craigslist.org", "craigslist"] },
-  { "url": "https://api-img.icons8.com/?id=K6UH0aYK0gNV&format=svg&size=50&name=icons8-microsoft-word-2025.svg&fromSite=true",       "match": ["word"] },
-  { "url": "https://api-img.icons8.com/?id=eITB1Wwun62W&format=svg&size=50&name=icons8-microsoft-excel-2025.svg&fromSite=true",      "match": ["excel"] },
-  { "url": "https://api-img.icons8.com/?id=TVIBipkrtzU6&format=svg&size=50&name=icons8-microsoft-powerpoint-2025.svg&fromSite=true", "match": ["powerpoint"] },
-  { "url": "https://api-img.icons8.com/?id=BUBSlePETFM1&format=svg&size=50&name=icons8-microsoft-teams-2025.svg&fromSite=true",      "match": ["teams.microsoft.com", "teams"] }
+  { "url": "https://api-img.icons8.com/?id=BUBSlePETFM1&format=svg&size=50&name=icons8-microsoft-teams-2025.svg&fromSite=true",      "match": ["teams.microsoft.com"] }
 ]

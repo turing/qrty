@@ -1,2 +1,2 @@
-/** User-facing error: bad profile, unknown value, unreadable contrast, no cairo. */
+/** User-facing error: bad profile, unknown value, background equals a foreground, canvas missing. */
 export class QrgenError extends Error {}

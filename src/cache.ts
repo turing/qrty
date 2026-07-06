@@ -1,19 +1,19 @@
-import { createHash, randomBytes } from "node:crypto";
+import { createHash } from "node:crypto";
 import {
-  mkdirSync,
   readFileSync,
   readdirSync,
-  renameSync,
   rmSync,
   statSync,
   writeFileSync,
 } from "node:fs";
-import { homedir } from "node:os";
 import { join } from "node:path";
+
+import { qrgenHome } from "./paths.ts";
+import { atomicWrite } from "./fs.ts";
 
 /** Where remote assets are cached (created on first write). */
 export function defaultCacheDir(): string {
-  return join(homedir(), ".qrgen", "cache");
+  return join(qrgenHome(), "cache");
 }
 
 /** Cache key for a URL: sha256 of the exact fetched URL (query + suffix). */
@@ -41,23 +41,62 @@ export function readCacheEntry(key: string, dir: string): CacheEntry | undefined
   }
 }
 
-/**
- * Temp filename for an in-progress write of `key`. UNIQUE per call (pid + random
- * suffix) so two concurrent in-process writers of the same URL never share a
- * temp file — neither can rename a file the other is mid-write on. Still ends in
- * `.tmp`, so `clearCache` sweeps abandoned temps.
- */
-export function tempName(key: string): string {
-  return `${key}.${process.pid}.${randomBytes(6).toString("hex")}.tmp`;
-}
-
 /** Store an asset atomically: unique temp file → rename, plus a `<key>.type` sidecar. */
 export function writeCacheEntry(key: string, entry: CacheEntry, dir: string): void {
-  mkdirSync(dir, { recursive: true });
-  const tmp = join(dir, tempName(key));
-  writeFileSync(tmp, entry.bytes);
-  renameSync(tmp, join(dir, key));
+  atomicWrite(join(dir, key), entry.bytes);
   writeFileSync(join(dir, `${key}.type`), `${entry.mime}\n`);
+}
+
+export const DEFAULT_MAX_CACHE_BYTES = 256 * 1024 * 1024; // 256 MiB backstop
+
+/**
+ * Evict oldest entries (by body mtime) until the cache dir's total size is within
+ * `maxBytes`. Each entry is a `<key>` body plus its `<key>.type` sidecar, removed
+ * together. `.tmp` files (transient write temps, and orphans left by a write that
+ * failed mid-rename, e.g. ENOSPC) are ignored entirely — never counted toward the
+ * total and never evicted — so orphan cruft can never force real entries out;
+ * `clearCache` sweeps them. No-op when the dir is missing or already under the
+ * ceiling; best-effort (never throws on a vanished file). Ordering is by body
+ * mtime; on a coarse-resolution filesystem two same-tick writes tie and fall back
+ * to `readdir` order — acceptable, since eviction is a rare backstop event.
+ */
+export function trimCache(dir: string, maxBytes: number = DEFAULT_MAX_CACHE_BYTES): void {
+  let names: string[];
+  try {
+    names = readdirSync(dir);
+  } catch {
+    return;
+  }
+  let total = 0;
+  const size = new Map<string, number>();
+  const bodies: { key: string; mtimeMs: number }[] = [];
+  for (const name of names) {
+    if (name.endsWith(".tmp")) continue; // transient temp; ignore for the ceiling
+    let st;
+    try {
+      st = statSync(join(dir, name));
+    } catch {
+      continue;
+    }
+    total += st.size;
+    size.set(name, st.size);
+    if (!name.endsWith(".type")) {
+      bodies.push({ key: name, mtimeMs: st.mtimeMs });
+    }
+  }
+  if (total <= maxBytes) return;
+  bodies.sort((a, b) => a.mtimeMs - b.mtimeMs); // oldest first
+  for (const { key } of bodies) {
+    if (total <= maxBytes) break;
+    for (const f of [key, `${key}.type`]) {
+      try {
+        rmSync(join(dir, f));
+        total -= size.get(f) ?? 0;
+      } catch {
+        // already gone
+      }
+    }
+  }
 }
 
 export interface ClearResult {
