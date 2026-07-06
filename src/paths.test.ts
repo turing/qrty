@@ -7,5 +7,4 @@ import { qrgenHome } from "./paths.ts";
 
 test("qrgenHome returns ~/.qrgen", () => {
   assert.equal(qrgenHome(), join(homedir(), ".qrgen"));
-  assert.ok(qrgenHome().endsWith(".qrgen"));
 });
