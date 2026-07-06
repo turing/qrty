@@ -27,7 +27,7 @@ const DEFAULT_SIZE = 1024;
 
 type Backend = "svg" | "canvas";
 
-function requireCanvas(): unknown {
+export function requireCanvas(): unknown {
   try {
     return require("canvas");
   } catch {
