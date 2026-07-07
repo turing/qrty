@@ -65,7 +65,7 @@ test("--help lists the icons and cache subcommands", async () => {
 test("'icons --help' prints help, not the selection list", async () => {
   const { code, out } = await captureRun(["icons", "--help"]);
   assert.equal(code, 0);
-  assert.match(out, /Usage: qrgen icons/);
+  assert.match(out, /Usage: qrty icons/);
   assert.doesNotMatch(out, /simpleicons\.org/); // not the icon list
 });
 

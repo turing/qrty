@@ -138,7 +138,7 @@ export async function ensureProfilesDir(
 
   if (!opts.interactive) {
     throw new QrtyError(
-      `No profiles found in ${defaultDir}. Run qrgen in a terminal once to ` +
+      `No profiles found in ${defaultDir}. Run qrty in a terminal once to ` +
         `seed the starter profiles, or add a <profile>.json.`,
     );
   }

@@ -139,7 +139,7 @@ export async function generate(
 export async function run(argv: string[]): Promise<number> {
   const program = new Command();
   program
-    .name("qrgen")
+    .name("qrty")
     .description("Render a styled SVG (and optional PNG) QR code from a profile.")
     .exitOverride()
     .allowExcessArguments(false);
