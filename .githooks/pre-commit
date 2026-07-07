@@ -1,0 +1,11 @@
+#!/bin/sh
+# Block commits that would introduce a secret. Enable once per clone:
+#   git config core.hooksPath .githooks
+# Requires gitleaks (brew install gitleaks). Bypass a false positive with
+# `git commit --no-verify`.
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: gitleaks not found — install it (brew install gitleaks)." >&2
+  echo "  Skip this guard for one commit with: git commit --no-verify" >&2
+  exit 1
+fi
+exec gitleaks git --staged --no-banner --redact
