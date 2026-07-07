@@ -8,7 +8,7 @@ export function expandHome(p: string): string {
   return p;
 }
 
-/** The qrgen config/cache root: `~/.qrgen`. */
-export function qrgenHome(): string {
-  return join(homedir(), ".qrgen");
+/** The qrty config/cache root: `~/.qrty`. */
+export function qrtyHome(): string {
+  return join(homedir(), ".qrty");
 }

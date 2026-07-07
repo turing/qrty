@@ -50,7 +50,7 @@ export interface GenerateOptions {
 }
 
 export interface GenerateDeps {
-  /** Where to seed starters (defaults to ~/.qrgen/profiles/default). */
+  /** Where to seed starters (defaults to ~/.qrty/profiles/default). */
   defaultDir?: string;
   /** Profile lookup order (defaults to [user, default]). */
   searchDirs?: string[];
@@ -145,7 +145,7 @@ export async function run(argv: string[]): Promise<number> {
     .allowExcessArguments(false);
 
   program
-    .argument("<profile>", "profile name (~/.qrgen/profiles/<profile>.json)")
+    .argument("<profile>", "profile name (~/.qrty/profiles/<profile>.json)")
     .argument("[url]", "URL to encode")
     .option("-o, --output <dir>", "output directory (overrides the profile)")
     .option("--png", "also write a PNG next to the SVG")

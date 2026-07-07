@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import { qrgenHome } from "./paths.ts";
+import { qrtyHome } from "./paths.ts";
 
-test("qrgenHome returns ~/.qrgen", () => {
-  assert.equal(qrgenHome(), join(homedir(), ".qrgen"));
+test("qrtyHome returns ~/.qrty", () => {
+  assert.equal(qrtyHome(), join(homedir(), ".qrty"));
 });

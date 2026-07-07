@@ -26,7 +26,7 @@ test("recolorIcon recolors a non-Simple-Icons SVG logo via the fill filter", asy
     image: "https://example.invalid/icon.svg",
     recolorIcon: true,
   };
-  // Guarantee a cache miss so the mock (not a stale ~/.qrgen/cache entry) is used.
+  // Guarantee a cache miss so the mock (not a stale ~/.qrty/cache entry) is used.
   const key = cacheKey("https://example.invalid/icon.svg");
   for (const f of [key, `${key}.type`]) {
     try { rmSync(join(defaultCacheDir(), f)); } catch { /* absent */ }

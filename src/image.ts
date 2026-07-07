@@ -114,7 +114,7 @@ function sniffImageMime(bytes: Buffer): string | null {
 }
 
 export interface FetchAssetOptions {
-  /** Cache directory override (defaults to `~/.qrgen/cache`); injected in tests. */
+  /** Cache directory override (defaults to `~/.qrty/cache`); injected in tests. */
   cacheDir?: string;
   /** Cache-size ceiling in bytes (defaults to trimCache's DEFAULT_MAX_CACHE_BYTES); injected in tests. */
   maxCacheBytes?: number;
@@ -122,7 +122,7 @@ export interface FetchAssetOptions {
 
 /**
  * Fetch a remote asset through the on-disk cache: each URL downloads once, then
- * serves from `~/.qrgen/cache`. Only 2xx image responses are cached — a non-2xx
+ * serves from `~/.qrty/cache`. Only 2xx image responses are cached — a non-2xx
  * or a non-image body throws `QrgenError` and leaves the cache untouched.
  */
 export async function fetchAsset(
