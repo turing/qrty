@@ -17,7 +17,8 @@
   "scripts": {
     "test": "node --test 'src/**/*.test.ts'",
     "typecheck": "tsc",
-    "qrty": "node src/cli.ts"
+    "qrty": "node src/cli.ts",
+    "llms": "node scripts/gen-llms.ts"
   },
   "license": "MIT",
   "dependencies": {
