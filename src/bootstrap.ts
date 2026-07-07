@@ -11,7 +11,7 @@ import { createInterface } from "node:readline/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 import { DEFAULT_DIR } from "./profiles.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -23,11 +23,11 @@ const ASSETS = join(ROOT, "assets");
  * create the sibling `user/`, and place shared assets: the JSON schema at
  * …/profiles/profile.schema.json (so `"$schema": "../profile.schema.json"`
  * resolves from either default/ or user/) and the bundled sample images under
- * ~/.qrgen/assets/default/. Returns the installed profile file names.
+ * ~/.qrty/assets/default/. Returns the installed profile file names.
  */
 export function installStarterProfiles(defaultDir: string): string[] {
-  const profilesRoot = dirname(defaultDir); // …/.qrgen/profiles
-  const qrgenHome = dirname(profilesRoot); // …/.qrgen
+  const profilesRoot = dirname(defaultDir); // …/.qrty/profiles
+  const qrtyHome = dirname(profilesRoot); // …/.qrty
 
   mkdirSync(defaultDir, { recursive: true });
   mkdirSync(join(profilesRoot, "user"), { recursive: true });
@@ -41,10 +41,10 @@ export function installStarterProfiles(defaultDir: string): string[] {
     join(DATA, "profile.schema.json"),
     join(profilesRoot, "profile.schema.json"),
   );
-  // Bundled sample assets -> ~/.qrgen/assets/default/ (available for your own
+  // Bundled sample assets -> ~/.qrty/assets/default/ (available for your own
   // profiles to reference locally).
   const assetsSrc = join(ASSETS, "default");
-  const assetsDst = join(qrgenHome, "assets", "default");
+  const assetsDst = join(qrtyHome, "assets", "default");
   mkdirSync(assetsDst, { recursive: true });
   for (const file of readdirSync(assetsSrc)) {
     copyFileSync(join(assetsSrc, file), join(assetsDst, file));
@@ -137,8 +137,8 @@ export async function ensureProfilesDir(
   if (hasProfiles(defaultDir)) return;
 
   if (!opts.interactive) {
-    throw new QrgenError(
-      `No profiles found in ${defaultDir}. Run qrgen in a terminal once to ` +
+    throw new QrtyError(
+      `No profiles found in ${defaultDir}. Run qrty in a terminal once to ` +
         `seed the starter profiles, or add a <profile>.json.`,
     );
   }
@@ -148,7 +148,7 @@ export async function ensureProfilesDir(
     `No profiles found in ${defaultDir}. Install the starter profiles? [Y/n] `,
   );
   if (!ok) {
-    throw new QrgenError(`No profiles in ${defaultDir}; nothing to do.`);
+    throw new QrtyError(`No profiles in ${defaultDir}; nothing to do.`);
   }
 
   const installed = installStarterProfiles(defaultDir);

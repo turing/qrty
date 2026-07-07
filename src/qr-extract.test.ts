@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { extractMatrix } from "./qr-extract.ts";
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 
 const require = createRequire(import.meta.url);
 
@@ -61,7 +61,7 @@ function buildMatrix(): boolean[][] {
 }
 
 function tmpPngPath(name: string): string {
-  return join(mkdtempSync(join(tmpdir(), "qrgen-extract-")), name);
+  return join(mkdtempSync(join(tmpdir(), "qrty-extract-")), name);
 }
 
 /** Renders a module matrix to a PNG: white background, dark rects per module,
@@ -106,7 +106,7 @@ test("extractMatrix round-trips a known matrix at non-integer px/module", () => 
   assert.deepEqual(extractMatrix(file), matrix);
 });
 
-test("extractMatrix throws QrgenError on a blank image", () => {
+test("extractMatrix throws QrtyError on a blank image", () => {
   const canvas = require("canvas") as CanvasModule;
   const c = canvas.createCanvas(200, 200);
   const ctx = c.getContext("2d");
@@ -114,10 +114,10 @@ test("extractMatrix throws QrgenError on a blank image", () => {
   ctx.fillRect(0, 0, 200, 200);
   const file = tmpPngPath("blank.png");
   writeFileSync(file, c.toBuffer("image/png"));
-  assert.throws(() => extractMatrix(file), QrgenError);
+  assert.throws(() => extractMatrix(file), QrtyError);
 });
 
-test("extractMatrix throws QrgenError on garbage (no coherent grid)", () => {
+test("extractMatrix throws QrtyError on garbage (no coherent grid)", () => {
   const canvas = require("canvas") as CanvasModule;
   const c = canvas.createCanvas(50, 50);
   const ctx = c.getContext("2d");
@@ -128,11 +128,11 @@ test("extractMatrix throws QrgenError on garbage (no coherent grid)", () => {
   ctx.fillRect(10, 10, 5, 5);
   const file = tmpPngPath("garbage.png");
   writeFileSync(file, c.toBuffer("image/png"));
-  assert.throws(() => extractMatrix(file), QrgenError);
+  assert.throws(() => extractMatrix(file), QrtyError);
 });
 
-test("extractMatrix throws QrgenError on a corrupt (non-image) file", () => {
+test("extractMatrix throws QrtyError on a corrupt (non-image) file", () => {
   const file = tmpPngPath("corrupt.png");
   writeFileSync(file, Buffer.from("this is not a decodable image")); // exists, not an image
-  assert.throws(() => extractMatrix(file), QrgenError);
+  assert.throws(() => extractMatrix(file), QrtyError);
 });

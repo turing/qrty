@@ -1,4 +1,4 @@
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 import { requireCanvas } from "./render.ts";
 
 // node-canvas decodes a local file path or Buffer assigned to `Image#src`
@@ -60,8 +60,8 @@ function validTiming(m: boolean[][], n: number): boolean {
   return true;
 }
 
-function unreadable(pngPath: string): QrgenError {
-  return new QrgenError(
+function unreadable(pngPath: string): QrtyError {
+  return new QrtyError(
     `Could not read a QR grid from ${pngPath} (need a clean, axis-aligned QR image).`,
   );
 }
@@ -73,9 +73,9 @@ export function extractMatrix(pngPath: string): boolean[][] {
   img.src = pngPath;
   const { width, height } = img;
   // A file that exists but isn't a decodable image loads to 0×0 (and would make
-  // drawImage throw a raw error); surface a QrgenError instead.
+  // drawImage throw a raw error); surface a QrtyError instead.
   if (!width || !height) {
-    throw new QrgenError(`Could not read an image from ${pngPath}.`);
+    throw new QrtyError(`Could not read an image from ${pngPath}.`);
   }
 
   const surface = canvas.createCanvas(width, height);

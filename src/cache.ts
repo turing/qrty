@@ -8,12 +8,12 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 
-import { qrgenHome } from "./paths.ts";
+import { qrtyHome } from "./paths.ts";
 import { atomicWrite } from "./fs.ts";
 
 /** Where remote assets are cached (created on first write). */
 export function defaultCacheDir(): string {
-  return join(qrgenHome(), "cache");
+  return join(qrtyHome(), "cache");
 }
 
 /** Cache key for a URL: sha256 of the exact fetched URL (query + suffix). */

@@ -1,4 +1,4 @@
-# qrgen
+# qrty
 
 Render a styled QR code from a named JSON style profile. SVG is the default and
 needs nothing native; a PNG is available on request. Styling is powered by
@@ -17,15 +17,15 @@ smooth rounded finder patterns, gradients, and logos — not blocky modules.
 
     npm install -g .
 
-This puts a `qrgen` command on your PATH. Or run without installing:
+This puts a `qrty` command on your PATH. Or run without installing:
 
     node src/cli.ts <profile> <url>
 
-On first run, if `~/.qrgen/profiles/` does not exist, `qrgen` offers to create
+On first run, if `~/.qrty/profiles/` does not exist, `qrty` offers to create
 it and install the bundled starter profiles (and the schema) — answer the prompt:
 
-    qrgen black https://youtube.com
-    # No profiles found in ~/.qrgen/profiles/default. Install the starter
+    qrty black https://youtube.com
+    # No profiles found in ~/.qrty/profiles/default. Install the starter
     # profiles? [Y/n] y
     # → ./output/youtube-black-1467931a0e8c-qr.svg
 
@@ -34,13 +34,13 @@ directory and add a `<profile>.json` yourself.
 
 ## Usage
 
-    qrgen <profile> <url> [--output DIR] [--png] [--size PX]
+    qrty <profile> <url> [--output DIR] [--png] [--size PX]
 
-    qrgen black https://youtube.com            # SVG into ./output/
-    qrgen white https://bbc.co.uk --png        # also write a PNG
-    qrgen ocean https://x.com -o ~/Desktop     # override output directory
+    qrty black https://youtube.com            # SVG into ./output/
+    qrty white https://bbc.co.uk --png        # also write a PNG
+    qrty ocean https://x.com -o ~/Desktop     # override output directory
 
-- `profile` — profile name; loads `~/.qrgen/profiles/<profile>.json`.
+- `profile` — profile name; loads `~/.qrty/profiles/<profile>.json`.
 - `url` — the URL to encode.
 - `-o, --output DIR` — output directory (overrides the profile's `output`).
 - `--png` — also write a PNG next to the SVG.
@@ -50,7 +50,7 @@ directory and add a `<profile>.json` yourself.
   defaulting to the dots color).
 
 A profile's `labelFont` picks a Google font for the label — `"Open Sans"`,
-`"Roboto"`, or `"Montserrat"`. The TTF is downloaded once to `~/.qrgen/fonts/`,
+`"Roboto"`, or `"Montserrat"`. The TTF is downloaded once to `~/.qrty/fonts/`,
 then **subset to just the label's characters and embedded** in the SVG as a
 base64 `@font-face` (a few KB) so the SVG is fully standalone/offline; the PNG
 bakes the same font in. Without `labelFont`, the SVG uses a generic font stack
@@ -67,7 +67,7 @@ Output directory precedence: `--output` flag > profile `output` key >
 
 ## Profiles
 
-Profiles live under `~/.qrgen/profiles/` in two layers:
+Profiles live under `~/.qrty/profiles/` in two layers:
 
 - `default/` — the ship-managed starters. Re-seeded from the package; don't edit
   these (edits get replaced on reinstall).
@@ -76,10 +76,10 @@ Profiles live under `~/.qrgen/profiles/` in two layers:
   here.
 
 The basename is the name you pass on the command line; lookup checks `user/`
-first, then `default/`. (Upgrading from a flat `~/.qrgen/profiles/*.json` layout
+first, then `default/`. (Upgrading from a flat `~/.qrty/profiles/*.json` layout
 is automatic: unedited default copies are dropped, your own profiles move to
 `user/`.) A profile is the styling subset of qr-code-styling's options plus
-qrgen's `output` — never the data.
+qrty's `output` — never the data.
 
     {
       "$schema": "../profile.schema.json",
@@ -146,8 +146,8 @@ transparency:
 
 ### Auto icons
 
-Set `"autoIcon": true` and qrgen picks a logo from the encoded URL's domain —
-`qrgen auto-white https://youtube.com/…` centers the YouTube icon, no config.
+Set `"autoIcon": true` and qrty picks a logo from the encoded URL's domain —
+`qrty auto-white https://youtube.com/…` centers the YouTube icon, no config.
 Detection matches the host (most specific first: `docs.google.com` before
 `google.com`) against `data/icon-map.json`; no match → no logo. Icons are
 plain image URLs (SVG from Simple Icons / developer-icons — canvas-free; raster
@@ -162,7 +162,7 @@ pick a solid-glyph icon for those.
 
 List every supported selection:
 
-    qrgen icons
+    qrty icons
 
 ### Logos
 
@@ -172,7 +172,7 @@ Set `image` (a file path, `data:` URI, or `http(s)` URL) plus optional
     "image": "~/logos/seal.png",
     "imageOptions": { "imageSize": 0.3, "margin": 6, "hideBackgroundDots": true }
 
-qrgen resolves every image to a self-contained `data:` URI — local files are
+qrty resolves every image to a self-contained `data:` URI — local files are
 read, remote URLs are fetched — because qr-code-styling can load neither
 directly in Node. SVG icons that ship only a `viewBox` get width/height injected
 so they size correctly. **An SVG logo needs nothing native.** A **raster** logo
@@ -181,12 +181,12 @@ as `--png` — and errors clearly if it is missing. Keep the logo small and use
 `errorCorrectionLevel: "H"` so the code still scans.
 
 The bundled `sample` profile fetches a remote SVG icon. Bundled sample images
-live in `~/.qrgen/assets/default/` for your own profiles to reference.
+live in `~/.qrty/assets/default/` for your own profiles to reference.
 
 ### Remote asset cache
 
 Every remote image — auto icons (including recolored Simple Icons variants) and
-`http(s)` profile `image` URLs — is cached under `~/.qrgen/cache/`, keyed by the
+`http(s)` profile `image` URLs — is cached under `~/.qrty/cache/`, keyed by the
 exact fetched URL. Each URL downloads once, then serves from disk: faster,
 offline after the first fetch, and no rate-limiting the icon sources on every
 render. Only genuine `2xx` image responses are cached — an HTML gate returned
@@ -194,16 +194,16 @@ with HTTP 200 (some CDNs do this) is rejected, never stored. There is no expiry
 (icon URLs are static), but the cache is bounded: once its total size passes
 ~256 MiB, the oldest entries are evicted on write to keep it under the ceiling.
 
-    qrgen cache path     # print the cache directory
-    qrgen cache clear    # empty it (reports assets removed + bytes freed)
+    qrty cache path     # print the cache directory
+    qrty cache clear    # empty it (reports assets removed + bytes freed)
 
-(Label fonts keep their own cache at `~/.qrgen/fonts/`.)
+(Label fonts keep their own cache at `~/.qrty/fonts/`.)
 
 **Fetch limits.** Every remote fetch (icons, profile `image` URLs, label fonts)
 is `http`/`https` only. The 10-second timeout bounds *getting the response* and
 any *stall* mid-download — not total time — so a large, steadily-progressing
 download completes (progress past 5 MB is printed to stderr); a server that stops
-sending is aborted. qrgen does **not** restrict which hosts a URL may resolve to —
+sending is aborted. qrty does **not** restrict which hosts a URL may resolve to —
 a profile's `image` URL is fetched as given, so treat profiles from untrusted
 sources like any untrusted code.
 
@@ -219,7 +219,7 @@ exits with a clear message and the SVG is still written. SVG output never needs
 
 ## Restyle an existing QR (`--restyle`)
 
-    qrgen <profile> --restyle <path-to-qr-image>
+    qrty <profile> --restyle <path-to-qr-image>
 
 Reproduces an existing QR **bit-for-bit** — every module copied exactly — and
 re-renders it in a profile's style (dot shape, colors/gradients, and the
@@ -227,8 +227,8 @@ profile's finder-corner styling). Because it copies the exact module grid rather
 than re-encoding the data, it preserves **artistic QR patterns** (a shape blended
 into the code) that can't be regenerated from the payload alone.
 
-    qrgen black --restyle qart.png            # restyle in the black profile
-    qrgen ocean --restyle qart.png -o ~/Desktop --png --label "scan me"
+    qrty black --restyle qart.png            # restyle in the black profile
+    qrty ocean --restyle qart.png -o ~/Desktop --png --label "scan me"
 
 - `--restyle <path>` **replaces** the `<url>` argument — passing both is an error.
 - Composes with `--png`, `--size`, and `--label` exactly like a normal render.
@@ -245,7 +245,7 @@ then `--restyle` it.
 
 The copied matrix is rendered through the **same styling engine as a normal
 render**, so every profile feature — dot shapes (including `classy`), gradients,
-and finder-corner styles — comes out identical to `qrgen <profile> <url>`. The
+and finder-corner styles — comes out identical to `qrty <profile> <url>`. The
 three finder patterns are drawn as the profile's styled corners; every other
 module carries the profile's dot style.
 
@@ -263,7 +263,7 @@ Styling and rendering are provided by
 
 Bundled sample assets:
 
-- `assets/default/qrgen-sample.jpeg` — a 16th-century ornamental letter Q from
+- `assets/default/qrty-sample.jpeg` — a 16th-century ornamental letter Q from
   Delamotte's *Ornamental Alphabets*, via
   [fromoldbooks.org](https://www.fromoldbooks.org/Comment/unwatermarked.cgi?source=DelamotteOrnamentalAlphabets;item=051-16th-Century-letter-q-q85-468x500.jpg).
 - The `sample` profile's logo is the bash icon from

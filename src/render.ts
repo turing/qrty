@@ -4,7 +4,7 @@ import { createRequire } from "node:module";
 import { JSDOM } from "jsdom";
 import type { Options } from "qr-code-styling";
 
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 import { resolveAutoIconUrl } from "./icons.ts";
 import { resolveImage } from "./image.ts";
 import type { Profile } from "./profiles.ts";
@@ -41,7 +41,7 @@ export function requireCanvas(): unknown {
   try {
     return require("canvas");
   } catch {
-    throw new QrgenError(
+    throw new QrtyError(
       "PNG output and raster logos need the 'canvas' package. Install it " +
         "(npm install canvas) and approve its build script.",
     );

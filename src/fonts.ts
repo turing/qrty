@@ -3,8 +3,8 @@ import { join } from "node:path";
 
 import subsetFont from "subset-font";
 
-import { QrgenError } from "./errors.ts";
-import { qrgenHome } from "./paths.ts";
+import { QrtyError } from "./errors.ts";
+import { qrtyHome } from "./paths.ts";
 import { fetchOrThrow } from "./fetch.ts";
 import { atomicWrite } from "./fs.ts";
 
@@ -34,12 +34,12 @@ const FONTS: Record<string, FontDef> = {
 
 export const LABEL_FONTS = Object.keys(FONTS);
 
-const CACHE = join(qrgenHome(), "fonts");
+const CACHE = join(qrtyHome(), "fonts");
 
 function def(name: string): FontDef {
   const f = FONTS[name];
   if (!f) {
-    throw new QrgenError(
+    throw new QrtyError(
       `Unknown labelFont '${name}'. Use one of: ${LABEL_FONTS.join(", ")}.`,
     );
   }

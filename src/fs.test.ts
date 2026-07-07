@@ -14,14 +14,14 @@ test("uniqueTmpPath is distinct every call, prefixed by the path, .tmp-suffixed"
 });
 
 test("atomicWrite writes the file and leaves no temp behind", () => {
-  const dir = mkdtempSync(join(tmpdir(), "qrgen-aw-"));
+  const dir = mkdtempSync(join(tmpdir(), "qrty-aw-"));
   atomicWrite(join(dir, "f.bin"), Buffer.from("hello"));
   assert.equal(readFileSync(join(dir, "f.bin"), "utf8"), "hello");
   assert.deepEqual(readdirSync(dir).filter((n) => n.endsWith(".tmp")), []);
 });
 
 test("atomicWrite creates missing parent dirs", () => {
-  const dir = mkdtempSync(join(tmpdir(), "qrgen-aw-"));
+  const dir = mkdtempSync(join(tmpdir(), "qrty-aw-"));
   atomicWrite(join(dir, "sub", "f.bin"), Buffer.from("x"));
   assert.equal(readFileSync(join(dir, "sub", "f.bin"), "utf8"), "x");
 });

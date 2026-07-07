@@ -8,7 +8,7 @@ import {
   trimCache,
   writeCacheEntry,
 } from "./cache.ts";
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 import { fetchOrThrow } from "./fetch.ts";
 import { expandHome } from "./paths.ts";
 
@@ -114,7 +114,7 @@ function sniffImageMime(bytes: Buffer): string | null {
 }
 
 export interface FetchAssetOptions {
-  /** Cache directory override (defaults to `~/.qrgen/cache`); injected in tests. */
+  /** Cache directory override (defaults to `~/.qrty/cache`); injected in tests. */
   cacheDir?: string;
   /** Cache-size ceiling in bytes (defaults to trimCache's DEFAULT_MAX_CACHE_BYTES); injected in tests. */
   maxCacheBytes?: number;
@@ -122,8 +122,8 @@ export interface FetchAssetOptions {
 
 /**
  * Fetch a remote asset through the on-disk cache: each URL downloads once, then
- * serves from `~/.qrgen/cache`. Only 2xx image responses are cached — a non-2xx
- * or a non-image body throws `QrgenError` and leaves the cache untouched.
+ * serves from `~/.qrty/cache`. Only 2xx image responses are cached — a non-2xx
+ * or a non-image body throws `QrtyError` and leaves the cache untouched.
  */
 export async function fetchAsset(
   url: string,
@@ -148,7 +148,7 @@ export async function fetchAsset(
   } else {
     const sniffed = sniffImageMime(bytes);
     if (!sniffed) {
-      throw new QrgenError(
+      throw new QrtyError(
         `Could not fetch logo ${url}: response was not an image.`,
       );
     }
@@ -188,7 +188,7 @@ export async function resolveImage(
   const ext = extname(path).toLowerCase();
   const mime = MIME[ext];
   if (!mime) {
-    throw new QrgenError(
+    throw new QrtyError(
       `Unsupported logo type '${ext || "(none)"}' for ${path}. ` +
         `Use svg, png, jpg, webp, or gif.`,
     );
@@ -197,7 +197,7 @@ export async function resolveImage(
   try {
     bytes = readFileSync(path);
   } catch {
-    throw new QrgenError(`Logo not found: ${path}`);
+    throw new QrtyError(`Logo not found: ${path}`);
   }
   return toDataUri(mime, bytes);
 }

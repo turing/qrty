@@ -12,14 +12,14 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { ensureProfilesDir, installStarterProfiles } from "./bootstrap.ts";
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 
 const DATA_REPO = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
 
 const nullStream = { write: (_: string): void => {} };
 
 function home(): string {
-  return mkdtempSync(join(tmpdir(), "qrgen-"));
+  return mkdtempSync(join(tmpdir(), "qrty-"));
 }
 function defaultDirIn(h: string): string {
   return join(h, "profiles", "default");
@@ -32,7 +32,7 @@ test("installStarterProfiles seeds default/, schema, logo, and creates user/", (
   assert.ok(installed.includes("black.json"));
   assert.ok(existsSync(join(dd, "black.json")));
   assert.ok(existsSync(join(h, "profiles", "profile.schema.json")));
-  assert.ok(existsSync(join(h, "assets", "default", "qrgen-sample.jpeg")));
+  assert.ok(existsSync(join(h, "assets", "default", "qrty-sample.jpeg")));
   assert.ok(existsSync(join(h, "profiles", "user")));
 });
 
@@ -76,7 +76,7 @@ test("interactive no throws and seeds nothing", async () => {
         confirm: () => false,
         stream: nullStream,
       }),
-    QrgenError,
+    QrtyError,
   );
   assert.ok(!existsSync(join(dd, "black.json")));
 });

@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { LABEL_FONTS, fontFamily, ensureFontFile } from "./fonts.ts";
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 
 test("allows exactly Open Sans, Roboto, Montserrat", () => {
   assert.deepEqual(LABEL_FONTS, ["Open Sans", "Roboto", "Montserrat"]);
@@ -16,11 +16,11 @@ test("fontFamily returns the CSS family", () => {
 });
 
 test("an unknown font throws", () => {
-  assert.throws(() => fontFamily("Comic Sans"), QrgenError);
+  assert.throws(() => fontFamily("Comic Sans"), QrtyError);
 });
 
 test("ensureFontFile downloads once, then serves the cached file", async () => {
-  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-font-"));
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrty-font-"));
   const orig = globalThis.fetch;
   let calls = 0;
   globalThis.fetch = (async () => {
@@ -40,7 +40,7 @@ test("ensureFontFile downloads once, then serves the cached file", async () => {
 });
 
 test("ensureFontFile rejects a non-2xx and writes nothing", async () => {
-  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-font-"));
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrty-font-"));
   const orig = globalThis.fetch;
   globalThis.fetch = (async () => new Response("no", { status: 500 })) as typeof fetch;
   try {
@@ -55,7 +55,7 @@ test("ensureFontFile rejects a non-2xx and writes nothing", async () => {
 });
 
 test("ensureFontFile sweeps a stale .tmp from a crashed prior write", async () => {
-  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-font-"));
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrty-font-"));
   writeFileSync(join(cacheDir, "Roboto.ttf.999.deadbeef.tmp"), "junk"); // stale orphan
   const orig = globalThis.fetch;
   globalThis.fetch = (async () => new Response("TTFDATA", { status: 200 })) as typeof fetch;

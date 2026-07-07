@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { loadProfile } from "./profiles.ts";
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 
 const VALID = {
   dots: { type: "rounded", color: "#000000" },
@@ -16,7 +16,7 @@ const VALID = {
 };
 
 function tmp(): string {
-  return mkdtempSync(join(tmpdir(), "qrgen-"));
+  return mkdtempSync(join(tmpdir(), "qrty-"));
 }
 
 function write(dir: string, name: string, data: unknown): void {
@@ -64,19 +64,19 @@ test("malformed json throws", () => {
 test("unknown dot type rejected", () => {
   const d = tmp();
   write(d, "weird", { ...VALID, dots: { type: "hexagon", color: "#000000" } });
-  assert.throws(() => loadProfile("weird", d), QrgenError);
+  assert.throws(() => loadProfile("weird", d), QrtyError);
 });
 
 test("missing dots rejected", () => {
   const d = tmp();
   write(d, "nodots", { background: { color: "#FFFFFF" } });
-  assert.throws(() => loadProfile("nodots", d), QrgenError);
+  assert.throws(() => loadProfile("nodots", d), QrtyError);
 });
 
 test("unknown extra property rejected", () => {
   const d = tmp();
   write(d, "extra", { ...VALID, bogus: 1 });
-  assert.throws(() => loadProfile("extra", d), QrgenError);
+  assert.throws(() => loadProfile("extra", d), QrtyError);
 });
 
 test("background equal to a foreground color rejected as unreadable", () => {
