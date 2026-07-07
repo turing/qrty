@@ -5,8 +5,8 @@
  */
 export function recolorSvg(svg: string, color: string): string {
   let out = svg
-    .replace(/(\bfill\s*=\s*")(?!none")[^"]*(")/gi, `$1${color}$2`)
-    .replace(/(\bstroke\s*=\s*")(?!none")[^"]*(")/gi, `$1${color}$2`)
+    .replace(/(\bfill\s*=\s*)(['"])(?!none\2)[^'"]*\2/gi, `$1$2${color}$2`)
+    .replace(/(\bstroke\s*=\s*)(['"])(?!none\2)[^'"]*\2/gi, `$1$2${color}$2`)
     .replace(/(fill\s*:\s*)(?!none)[^;"'}]+/gi, `$1${color}`)
     .replace(/(stroke\s*:\s*)(?!none)[^;"'}]+/gi, `$1${color}`);
   if (!/<svg[^>]*\bfill\s*=/i.test(out)) {

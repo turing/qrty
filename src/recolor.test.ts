@@ -20,6 +20,17 @@ test("rewrites fill and stroke to the color, preserving none", () => {
   assert.doesNotMatch(out, /#ff0000/i);
 });
 
+test("rewrites single-quoted fill and stroke, preserving none", () => {
+  const svg =
+    "<svg><path fill='#ff0000' stroke='#00ff00'/><rect fill='none'/>" +
+    "<circle stroke='none'/></svg>";
+  const out = recolorSvg(svg, "#FFFFFF");
+  assert.doesNotMatch(out, /#ff0000/i);
+  assert.doesNotMatch(out, /#00ff00/i);
+  assert.match(out, /fill=['"]none['"]/);
+  assert.match(out, /stroke=['"]none['"]/);
+});
+
 test("rewrites inline style fill/stroke", () => {
   const out = recolorSvg(
     '<svg><path style="fill:#123456;stroke:#654321"/></svg>',
