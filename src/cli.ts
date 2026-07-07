@@ -145,7 +145,7 @@ export async function run(argv: string[]): Promise<number> {
     .allowExcessArguments(false);
 
   program
-    .argument("<profile>", "profile name (~/.qrty/profiles/<profile>.json)")
+    .argument("<profile>", "profile name (~/.qrty/profiles/{user,default}/<profile>.json)")
     .argument("[url]", "URL to encode")
     .option("-o, --output <dir>", "output directory (overrides the profile)")
     .option("--png", "also write a PNG next to the SVG")
