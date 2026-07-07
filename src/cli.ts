@@ -7,7 +7,7 @@ import { Command, CommanderError } from "commander";
 
 import { ensureProfilesDir } from "./bootstrap.ts";
 import { clearCache, defaultCacheDir } from "./cache.ts";
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 import { ensureFontFile, fontFaceCss, fontFamily } from "./fonts.ts";
 import { listSelections } from "./icons.ts";
 import { addLabel } from "./label.ts";
@@ -79,7 +79,7 @@ export async function generate(
   let restylePx: number | undefined;
   if (opts.restyle) {
     if (!existsSync(opts.restyle)) {
-      throw new QrgenError(`Restyle image not found: ${opts.restyle}`);
+      throw new QrtyError(`Restyle image not found: ${opts.restyle}`);
     }
     stem = restyleStem(opts.restyle, opts.profile);
     restylePx = opts.size ?? profile.size ?? DEFAULT_SIZE;
@@ -164,13 +164,13 @@ export async function run(argv: string[]): Promise<number> {
           restyle?: string;
         },
       ) => {
-        // A QrgenError (or anything else) thrown here surfaces as a parseAsync
+        // A QrtyError (or anything else) thrown here surfaces as a parseAsync
         // rejection and is classified in the single catch below.
         if (opts.restyle && url) {
-          throw new QrgenError("--restyle cannot be combined with a <url>.");
+          throw new QrtyError("--restyle cannot be combined with a <url>.");
         }
         if (!opts.restyle && !url) {
-          throw new QrgenError("a <url> is required (or use --restyle <path>).");
+          throw new QrtyError("a <url> is required (or use --restyle <path>).");
         }
         const written = await generate({
           profile,
@@ -210,7 +210,7 @@ export async function run(argv: string[]): Promise<number> {
         );
         return;
       }
-      throw new QrgenError(
+      throw new QrtyError(
         `unknown cache subcommand '${action}'. Use 'path' or 'clear'.`,
       );
     });
@@ -220,7 +220,7 @@ export async function run(argv: string[]): Promise<number> {
   } catch (err) {
     // Usage/help/version already written by commander.
     if (err instanceof CommanderError) return err.exitCode;
-    if (err instanceof QrgenError) {
+    if (err instanceof QrtyError) {
       process.stderr.write(`error: ${err.message}\n`);
       return 2;
     }

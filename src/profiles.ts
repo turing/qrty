@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { Ajv2020 } from "ajv/dist/2020.js";
 
 import schema from "../data/profile.schema.json" with { type: "json" };
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 import { qrtyHome } from "./paths.ts";
 import type {
   CornerDotType,
@@ -79,7 +79,7 @@ function assertForegroundBackgroundDiffer(profile: Profile, where: string): void
     profile.cornersDot?.color,
   ].filter((c): c is string => typeof c === "string");
   if (foregrounds.some((c) => c.toLowerCase() === bg)) {
-    throw new QrgenError(
+    throw new QrtyError(
       `${where}: background ${bg} matches a foreground color — ` +
         `the QR would be unreadable.`,
     );
@@ -98,7 +98,7 @@ export function loadProfile(
   // The name becomes a filename (`<name>.json`) and is embedded in the output
   // stem, so restrict it to a safe basename — no path separators or traversal.
   if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(name)) {
-    throw new QrgenError(
+    throw new QrtyError(
       `Invalid profile name '${name}': use letters, digits, '.', '_', '-' ` +
         `(no path separators).`,
     );
@@ -108,7 +108,7 @@ export function loadProfile(
     .map((d) => join(d, `${name}.json`))
     .find((p) => existsSync(p));
   if (!path) {
-    throw new QrgenError(
+    throw new QrtyError(
       `Profile not found: ${name} (searched ${searchDirs.join(", ")})`,
     );
   }
@@ -119,11 +119,11 @@ export function loadProfile(
   try {
     data = JSON.parse(raw);
   } catch (err) {
-    throw new QrgenError(`Malformed profile ${path}: ${(err as Error).message}`);
+    throw new QrtyError(`Malformed profile ${path}: ${(err as Error).message}`);
   }
 
   if (!validate(data)) {
-    throw new QrgenError(
+    throw new QrtyError(
       `Invalid profile ${path}: ${ajv.errorsText(validate.errors, { separator: "; " })}`,
     );
   }

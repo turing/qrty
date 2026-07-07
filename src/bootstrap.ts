@@ -11,7 +11,7 @@ import { createInterface } from "node:readline/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 import { DEFAULT_DIR } from "./profiles.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -137,7 +137,7 @@ export async function ensureProfilesDir(
   if (hasProfiles(defaultDir)) return;
 
   if (!opts.interactive) {
-    throw new QrgenError(
+    throw new QrtyError(
       `No profiles found in ${defaultDir}. Run qrgen in a terminal once to ` +
         `seed the starter profiles, or add a <profile>.json.`,
     );
@@ -148,7 +148,7 @@ export async function ensureProfilesDir(
     `No profiles found in ${defaultDir}. Install the starter profiles? [Y/n] `,
   );
   if (!ok) {
-    throw new QrgenError(`No profiles in ${defaultDir}; nothing to do.`);
+    throw new QrtyError(`No profiles in ${defaultDir}; nothing to do.`);
   }
 
   const installed = installStarterProfiles(defaultDir);

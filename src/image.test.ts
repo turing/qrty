@@ -6,7 +6,7 @@ import { join } from "node:path";
 
 import { cacheKey } from "./cache.ts";
 import { fetchAsset, resolveImage } from "./image.ts";
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 import { recolorSvgDataUri } from "./recolor.ts";
 
 function tmpFile(name: string, body = "x"): string {
@@ -66,7 +66,7 @@ test("svg body under a non-image content-type is sniffed as svg, not raster", as
   }
 });
 
-test("http url failure throws QrgenError", async () => {
+test("http url failure throws QrtyError", async () => {
   const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-img-cache-"));
   const orig = globalThis.fetch;
   globalThis.fetch = (async () =>
@@ -81,11 +81,11 @@ test("http url failure throws QrgenError", async () => {
   }
 });
 
-test("missing file throws QrgenError", async () => {
-  await assert.rejects(() => resolveImage("/no/such/logo.svg"), QrgenError);
+test("missing file throws QrtyError", async () => {
+  await assert.rejects(() => resolveImage("/no/such/logo.svg"), QrtyError);
 });
 
-test("unsupported extension throws QrgenError", async () => {
+test("unsupported extension throws QrtyError", async () => {
   const p = tmpFile("logo.bmp", "x");
   await assert.rejects(() => resolveImage(p), /Unsupported/);
 });

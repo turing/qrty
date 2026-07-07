@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { LABEL_FONTS, fontFamily, ensureFontFile } from "./fonts.ts";
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 
 test("allows exactly Open Sans, Roboto, Montserrat", () => {
   assert.deepEqual(LABEL_FONTS, ["Open Sans", "Roboto", "Montserrat"]);
@@ -16,7 +16,7 @@ test("fontFamily returns the CSS family", () => {
 });
 
 test("an unknown font throws", () => {
-  assert.throws(() => fontFamily("Comic Sans"), QrgenError);
+  assert.throws(() => fontFamily("Comic Sans"), QrtyError);
 });
 
 test("ensureFontFile downloads once, then serves the cached file", async () => {

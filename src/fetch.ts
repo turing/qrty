@@ -1,4 +1,4 @@
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 
 const DEFAULT_TIMEOUT_MS = 10_000; // response timeout AND per-chunk idle timeout
 const PROGRESS_BYTES = 5 * 1024 * 1024; // report progress past 5 MiB
@@ -21,7 +21,7 @@ export interface FetchedBody {
 }
 
 /**
- * Fetch a URL and return its body, or throw a QrgenError. The single network
+ * Fetch a URL and return its body, or throw a QrtyError. The single network
  * chokepoint: http/https only. The timeout bounds getting the response and each
  * idle gap during streaming — it does NOT cap total size or total time, so large
  * downloads complete (with stderr progress past `progressBytes`). `label` is the
@@ -36,10 +36,10 @@ export async function fetchOrThrow(
   try {
     parsed = new URL(url);
   } catch {
-    throw new QrgenError(`Could not fetch ${label}: invalid URL.`);
+    throw new QrtyError(`Could not fetch ${label}: invalid URL.`);
   }
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-    throw new QrgenError(`Could not fetch ${label}: unsupported URL scheme (only http/https).`);
+    throw new QrtyError(`Could not fetch ${label}: unsupported URL scheme (only http/https).`);
   }
 
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
@@ -54,12 +54,12 @@ export async function fetchOrThrow(
   } catch (err) {
     clearTimeout(respTimer);
     throw controller.signal.aborted
-      ? new QrgenError(`Could not fetch ${label}: no response within ${timeoutMs}ms.`)
-      : new QrgenError(`Could not fetch ${label}: ${(err as Error).message}`);
+      ? new QrtyError(`Could not fetch ${label}: no response within ${timeoutMs}ms.`)
+      : new QrtyError(`Could not fetch ${label}: ${(err as Error).message}`);
   }
   clearTimeout(respTimer);
   if (!res.ok) {
-    throw new QrgenError(`Could not fetch ${label}: HTTP ${res.status}`);
+    throw new QrtyError(`Could not fetch ${label}: HTTP ${res.status}`);
   }
 
   const contentType = res.headers.get("content-type") ?? "";
@@ -91,7 +91,7 @@ async function readBody(
       idle = setTimeout(() => {
         controller.abort(); // stop the underlying stream
         reject(
-          new QrgenError(
+          new QrtyError(
             `Could not fetch ${label}: download stalled (no data for ${idleMs}ms).`,
           ),
         );
@@ -102,8 +102,8 @@ async function readBody(
     try {
       ({ done, value } = await Promise.race([reader.read(), stall]));
     } catch (err) {
-      if (err instanceof QrgenError) throw err;
-      throw new QrgenError(`Could not fetch ${label}: ${(err as Error).message}`);
+      if (err instanceof QrtyError) throw err;
+      throw new QrtyError(`Could not fetch ${label}: ${(err as Error).message}`);
     } finally {
       if (idle) clearTimeout(idle);
     }

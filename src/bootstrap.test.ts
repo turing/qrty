@@ -12,7 +12,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { ensureProfilesDir, installStarterProfiles } from "./bootstrap.ts";
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 
 const DATA_REPO = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
 
@@ -76,7 +76,7 @@ test("interactive no throws and seeds nothing", async () => {
         confirm: () => false,
         stream: nullStream,
       }),
-    QrgenError,
+    QrtyError,
   );
   assert.ok(!existsSync(join(dd, "black.json")));
 });

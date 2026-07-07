@@ -13,7 +13,7 @@ import { join } from "node:path";
 
 import { clearCache, cacheKey, trimCache } from "./cache.ts";
 import { fetchAsset } from "./image.ts";
-import { QrgenError } from "./errors.ts";
+import { QrtyError } from "./errors.ts";
 
 function tmpCacheDir(): string {
   return mkdtempSync(join(tmpdir(), "qrgen-cache-"));
@@ -70,7 +70,7 @@ test("fetchAsset rejects an HTML gate served with HTTP 200 and caches nothing", 
   try {
     await assert.rejects(
       () => fetchAsset("https://svgrepo.example/gate.svg", { cacheDir }),
-      QrgenError,
+      QrtyError,
     );
     assert.deepEqual(readdirSync(cacheDir), []);
   } finally {
