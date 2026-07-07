@@ -49,6 +49,12 @@ test("run 'cache' with an unknown subcommand errors", async () => {
   assert.match(err, /cache/);
 });
 
+test("no arguments prints help and exits 0", async () => {
+  const { code, out } = await captureRun([]);
+  assert.equal(code, 0);
+  assert.match(out, /Usage: qrty/);
+});
+
 test("run 'icons' lists selections", async () => {
   const { code, out } = await captureRun(["icons"]);
   assert.equal(code, 0);

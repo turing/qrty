@@ -215,6 +215,12 @@ export async function run(argv: string[]): Promise<number> {
       );
     });
 
+  // Bare invocation: show usage instead of commander's missing-argument error.
+  if (argv.length === 0) {
+    process.stdout.write(program.helpInformation());
+    return 0;
+  }
+
   try {
     await program.parseAsync(argv, { from: "user" });
   } catch (err) {
