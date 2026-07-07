@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 23.6.0 is the engines floor (unflagged TypeScript type-stripping);
+        # 24.x is the current line. Both must satisfy `node src/*.ts` directly.
+        node-version: ['23.6.0', '24.x']
+    steps:
+      - uses: actions/checkout@v4
+
+      # canvas is an optionalDependency; its native binary links cairo/pango/etc.
+      # at runtime whether prebuilt or compiled, so the PNG + restyle tests need
+      # these libs present.
+      - name: Install canvas system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
