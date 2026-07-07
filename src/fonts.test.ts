@@ -20,7 +20,7 @@ test("an unknown font throws", () => {
 });
 
 test("ensureFontFile downloads once, then serves the cached file", async () => {
-  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-font-"));
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrty-font-"));
   const orig = globalThis.fetch;
   let calls = 0;
   globalThis.fetch = (async () => {
@@ -40,7 +40,7 @@ test("ensureFontFile downloads once, then serves the cached file", async () => {
 });
 
 test("ensureFontFile rejects a non-2xx and writes nothing", async () => {
-  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-font-"));
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrty-font-"));
   const orig = globalThis.fetch;
   globalThis.fetch = (async () => new Response("no", { status: 500 })) as typeof fetch;
   try {
@@ -55,7 +55,7 @@ test("ensureFontFile rejects a non-2xx and writes nothing", async () => {
 });
 
 test("ensureFontFile sweeps a stale .tmp from a crashed prior write", async () => {
-  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-font-"));
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrty-font-"));
   writeFileSync(join(cacheDir, "Roboto.ttf.999.deadbeef.tmp"), "junk"); // stale orphan
   const orig = globalThis.fetch;
   globalThis.fetch = (async () => new Response("TTFDATA", { status: 200 })) as typeof fetch;

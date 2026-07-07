@@ -16,7 +16,7 @@ import { fetchAsset } from "./image.ts";
 import { QrtyError } from "./errors.ts";
 
 function tmpCacheDir(): string {
-  return mkdtempSync(join(tmpdir(), "qrgen-cache-"));
+  return mkdtempSync(join(tmpdir(), "qrty-cache-"));
 }
 
 function svgResponse(): Response {
@@ -124,7 +124,7 @@ test("concurrent fetchAsset writes leave the cached body intact and no tmp", asy
 });
 
 test("trimCache evicts oldest entries (body + sidecar) until under the ceiling", () => {
-  const dir = mkdtempSync(join(tmpdir(), "qrgen-trim-"));
+  const dir = mkdtempSync(join(tmpdir(), "qrty-trim-"));
   const keys = ["aaa", "bbb", "ccc"]; // will set aaa oldest → ccc newest
   keys.forEach((k, i) => {
     writeFileSync(join(dir, k), Buffer.alloc(100));      // 100-byte body
@@ -142,7 +142,7 @@ test("trimCache evicts oldest entries (body + sidecar) until under the ceiling",
 });
 
 test("trimCache is a no-op under the ceiling and on a missing dir", () => {
-  const dir = mkdtempSync(join(tmpdir(), "qrgen-trim-"));
+  const dir = mkdtempSync(join(tmpdir(), "qrty-trim-"));
   writeFileSync(join(dir, "k"), Buffer.alloc(10));
   writeFileSync(join(dir, "k.type"), "image/png\n");
   trimCache(dir, 1_000_000);
@@ -151,7 +151,7 @@ test("trimCache is a no-op under the ceiling and on a missing dir", () => {
 });
 
 test("trimCache sweeps an orphan .type sidecar (no matching body)", () => {
-  const dir = mkdtempSync(join(tmpdir(), "qrgen-trim-"));
+  const dir = mkdtempSync(join(tmpdir(), "qrty-trim-"));
   writeFileSync(join(dir, "deadkey.type"), "image/png\n"); // orphan — no body
   writeFileSync(join(dir, "live"), Buffer.alloc(10));
   writeFileSync(join(dir, "live.type"), "image/png\n");

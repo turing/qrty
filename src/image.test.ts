@@ -10,7 +10,7 @@ import { QrtyError } from "./errors.ts";
 import { recolorSvgDataUri } from "./recolor.ts";
 
 function tmpFile(name: string, body = "x"): string {
-  const p = join(mkdtempSync(join(tmpdir(), "qrgen-img-")), name);
+  const p = join(mkdtempSync(join(tmpdir(), "qrty-img-")), name);
   writeFileSync(p, body);
   return p;
 }
@@ -35,7 +35,7 @@ test("data URI passes through (svg not raster, png raster)", async () => {
 });
 
 test("http url is fetched and inlined; svg content-type is not raster", async () => {
-  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-img-cache-"));
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrty-img-cache-"));
   const orig = globalThis.fetch;
   globalThis.fetch = (async () =>
     new Response("<svg/>", {
@@ -51,7 +51,7 @@ test("http url is fetched and inlined; svg content-type is not raster", async ()
 });
 
 test("svg body under a non-image content-type is sniffed as svg, not raster", async () => {
-  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-img-cache-"));
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrty-img-cache-"));
   const orig = globalThis.fetch;
   globalThis.fetch = (async () =>
     new Response("<svg xmlns='http://www.w3.org/2000/svg'/>", {
@@ -67,7 +67,7 @@ test("svg body under a non-image content-type is sniffed as svg, not raster", as
 });
 
 test("http url failure throws QrtyError", async () => {
-  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-img-cache-"));
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrty-img-cache-"));
   const orig = globalThis.fetch;
   globalThis.fetch = (async () =>
     new Response("nope", { status: 404 })) as typeof fetch;
@@ -133,7 +133,7 @@ test("a malformed SVG data URI falls back to passthrough without throwing", asyn
 });
 
 test("fetchAsset trims the cache to maxCacheBytes, evicting the oldest", async () => {
-  const cacheDir = mkdtempSync(join(tmpdir(), "qrgen-trim-int-"));
+  const cacheDir = mkdtempSync(join(tmpdir(), "qrty-trim-int-"));
   const orig = globalThis.fetch;
   globalThis.fetch = (async () =>
     new Response("<svg/>", { headers: { "content-type": "image/svg+xml" } })) as typeof fetch;

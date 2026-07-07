@@ -16,7 +16,7 @@ const VALID = {
 };
 
 function tmp(): string {
-  return mkdtempSync(join(tmpdir(), "qrgen-"));
+  return mkdtempSync(join(tmpdir(), "qrty-"));
 }
 
 function write(dir: string, name: string, data: unknown): void {

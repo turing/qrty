@@ -61,7 +61,7 @@ function buildMatrix(): boolean[][] {
 }
 
 function tmpPngPath(name: string): string {
-  return join(mkdtempSync(join(tmpdir(), "qrgen-extract-")), name);
+  return join(mkdtempSync(join(tmpdir(), "qrty-extract-")), name);
 }
 
 /** Renders a module matrix to a PNG: white background, dark rects per module,

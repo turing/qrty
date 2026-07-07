@@ -19,7 +19,7 @@ const DATA_REPO = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
 const nullStream = { write: (_: string): void => {} };
 
 function home(): string {
-  return mkdtempSync(join(tmpdir(), "qrgen-"));
+  return mkdtempSync(join(tmpdir(), "qrty-"));
 }
 function defaultDirIn(h: string): string {
   return join(h, "profiles", "default");

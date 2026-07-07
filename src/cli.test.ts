@@ -27,14 +27,14 @@ async function captureRun(argv: string[]): Promise<{ code: number; out: string; 
 }
 
 function seededProfiles(): { defaultDir: string; searchDirs: string[] } {
-  const home = mkdtempSync(join(tmpdir(), "qrgen-"));
+  const home = mkdtempSync(join(tmpdir(), "qrty-"));
   const defaultDir = join(home, "profiles", "default");
   installStarterProfiles(defaultDir);
   return { defaultDir, searchDirs: [join(home, "profiles", "user"), defaultDir] };
 }
 
 function outDir(): string {
-  return mkdtempSync(join(tmpdir(), "qrgen-out-"));
+  return mkdtempSync(join(tmpdir(), "qrty-out-"));
 }
 
 test("run 'cache path' prints the cache directory", async () => {
@@ -113,7 +113,7 @@ test("returns a fully-qualified absolute path", async () => {
 
 test("a relative output dir is resolved to an absolute path", async () => {
   const { defaultDir, searchDirs } = seededProfiles();
-  const cwd = mkdtempSync(join(tmpdir(), "qrgen-cwd-"));
+  const cwd = mkdtempSync(join(tmpdir(), "qrty-cwd-"));
   const prev = process.cwd();
   try {
     process.chdir(cwd);

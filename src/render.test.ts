@@ -94,7 +94,7 @@ test("svg reflects the background color", async () => {
 });
 
 test("embeds an svg logo without needing canvas", async () => {
-  const dir = mkdtempSync(join(tmpdir(), "qrgen-logo-"));
+  const dir = mkdtempSync(join(tmpdir(), "qrty-logo-"));
   const logo = join(dir, "logo.svg");
   writeFileSync(
     logo,
@@ -111,7 +111,7 @@ test("embeds an svg logo without needing canvas", async () => {
 });
 
 test("embeds a viewBox-only svg logo by injecting dimensions", async () => {
-  const dir = mkdtempSync(join(tmpdir(), "qrgen-vb-"));
+  const dir = mkdtempSync(join(tmpdir(), "qrty-vb-"));
   const logo = join(dir, "vb.svg");
   writeFileSync(
     logo,
