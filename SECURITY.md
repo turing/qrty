@@ -10,7 +10,7 @@ qrty is developed against `main`; security fixes land there and in the latest
 **Do not open a public issue.** Report privately through GitHub's
 [Report a vulnerability](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability)
 flow (the repository's **Security** tab → *Report a vulnerability*), or email
-**56395+turing@users.noreply.github.com**.
+**[INSERT SECURITY CONTACT]**.
 
 Please include reproduction steps and the affected version. Expect an initial
 response within a few days.
