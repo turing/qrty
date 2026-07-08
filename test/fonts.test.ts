@@ -4,8 +4,8 @@ import { mkdtempSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { LABEL_FONTS, fontFamily, ensureFontFile } from "./fonts.ts";
-import { QrtyError } from "./errors.ts";
+import { LABEL_FONTS, fontFamily, ensureFontFile } from "../src/fonts.ts";
+import { QrtyError } from "../src/errors.ts";
 
 test("allows exactly Open Sans, Roboto, Montserrat", () => {
   assert.deepEqual(LABEL_FONTS, ["Open Sans", "Roboto", "Montserrat"]);

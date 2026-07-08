@@ -7,7 +7,7 @@ import {
   CORNER_SQUARE_TYPES,
   CORNER_DOT_TYPES,
   ERROR_CORRECTION_LEVELS,
-} from "./styles.ts";
+} from "../src/styles.ts";
 
 test("dot types match the schema enum", () => {
   assert.deepEqual([...DOT_TYPES], schema.$defs.dotType.enum);

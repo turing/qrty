@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { fetchOrThrow } from "./fetch.ts";
-import { QrtyError } from "./errors.ts";
+import { fetchOrThrow } from "../src/fetch.ts";
+import { QrtyError } from "../src/errors.ts";
 
 test("fetchOrThrow returns bytes and content-type on 2xx", async () => {
   const orig = globalThis.fetch;

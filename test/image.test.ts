@@ -4,10 +4,10 @@ import { mkdtempSync, readdirSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { cacheKey } from "./cache.ts";
-import { fetchAsset, resolveImage } from "./image.ts";
-import { QrtyError } from "./errors.ts";
-import { recolorSvgDataUri } from "./recolor.ts";
+import { cacheKey } from "../src/cache.ts";
+import { fetchAsset, resolveImage } from "../src/image.ts";
+import { QrtyError } from "../src/errors.ts";
+import { recolorSvgDataUri } from "../src/recolor.ts";
 
 function tmpFile(name: string, body = "x"): string {
   const p = join(mkdtempSync(join(tmpdir(), "qrty-img-")), name);

@@ -4,9 +4,9 @@ import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { renderSvg, renderPng, labelPng, renderRestyleSvg } from "./render.ts";
-import { cacheKey, defaultCacheDir } from "./cache.ts";
-import type { Profile } from "./profiles.ts";
+import { renderSvg, renderPng, labelPng, renderRestyleSvg } from "../src/render.ts";
+import { cacheKey, defaultCacheDir } from "../src/cache.ts";
+import type { Profile } from "../src/profiles.ts";
 
 const P: Profile = {
   dots: { type: "rounded", color: "#000000" },

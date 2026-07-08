@@ -6,7 +6,7 @@ import {
   recolorSvgDataUri,
   recolorStrategy,
   simpleIconsRecolorUrl,
-} from "./recolor.ts";
+} from "../src/recolor.ts";
 
 test("rewrites fill and stroke to the color, preserving none", () => {
   const svg =

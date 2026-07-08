@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { atomicWrite, uniqueTmpPath } from "./fs.ts";
+import { atomicWrite, uniqueTmpPath } from "../src/fs.ts";
 
 test("uniqueTmpPath is distinct every call, prefixed by the path, .tmp-suffixed", () => {
   const a = uniqueTmpPath("/d/key");

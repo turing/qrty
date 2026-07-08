@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { condenseReadme } from "./llms.ts";
+import { condenseReadme } from "../src/llms.ts";
 
 const META = { name: "qrty", description: "Test desc." };
 

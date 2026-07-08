@@ -11,8 +11,8 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { ensureProfilesDir, installStarterProfiles } from "./bootstrap.ts";
-import { QrtyError } from "./errors.ts";
+import { ensureProfilesDir, installStarterProfiles } from "../src/bootstrap.ts";
+import { QrtyError } from "../src/errors.ts";
 
 const DATA_REPO = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
 

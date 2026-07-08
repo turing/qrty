@@ -4,8 +4,8 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { loadProfile } from "./profiles.ts";
-import { QrtyError } from "./errors.ts";
+import { loadProfile } from "../src/profiles.ts";
+import { QrtyError } from "../src/errors.ts";
 
 const VALID = {
   dots: { type: "rounded", color: "#000000" },

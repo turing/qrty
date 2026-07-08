@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 
-import { deriveStem, labelFor } from "./naming.ts";
+import { deriveStem, labelFor } from "../src/naming.ts";
 
 const h = (u: string): string =>
   createHash("sha256").update(u).digest("hex").slice(0, 12);

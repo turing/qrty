@@ -11,9 +11,9 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { clearCache, cacheKey, trimCache } from "./cache.ts";
-import { fetchAsset } from "./image.ts";
-import { QrtyError } from "./errors.ts";
+import { clearCache, cacheKey, trimCache } from "../src/cache.ts";
+import { fetchAsset } from "../src/image.ts";
+import { QrtyError } from "../src/errors.ts";
 
 function tmpCacheDir(): string {
   return mkdtempSync(join(tmpdir(), "qrty-cache-"));

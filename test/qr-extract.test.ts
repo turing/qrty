@@ -5,8 +5,8 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { extractMatrix } from "./qr-extract.ts";
-import { QrtyError } from "./errors.ts";
+import { extractMatrix } from "../src/qr-extract.ts";
+import { QrtyError } from "../src/errors.ts";
 
 const require = createRequire(import.meta.url);
 

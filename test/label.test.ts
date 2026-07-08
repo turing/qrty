@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { addLabel } from "./label.ts";
+import { addLabel } from "../src/label.ts";
 
 const SVG = (w = 300, h = 300) =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect/></svg>`;

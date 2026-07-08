@@ -4,9 +4,9 @@ import { readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-import { loadProfile, type Profile } from "./profiles.ts";
-import { renderSvg } from "./render.ts";
-import { DOT_TYPES } from "./styles.ts";
+import { loadProfile, type Profile } from "../src/profiles.ts";
+import { renderSvg } from "../src/render.ts";
+import { DOT_TYPES } from "../src/styles.ts";
 
 const DATA = join(dirname(fileURLToPath(import.meta.url)), "..", "data");
 const BUNDLED = join(DATA, "profiles");

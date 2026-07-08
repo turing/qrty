@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { resolveAutoIconUrl, listSelections } from "./icons.ts";
+import { resolveAutoIconUrl, listSelections } from "../src/icons.ts";
 
 test("matches a plain domain to its icon", () => {
   assert.match(resolveAutoIconUrl("https://youtube.com/watch?v=x") ?? "", /youtube/);
