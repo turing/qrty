@@ -16,7 +16,7 @@ import { DEFAULT_DIR } from "./profiles.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DATA = join(ROOT, "data");
-const ASSETS = join(ROOT, "assets");
+const ASSETS = join(DATA, "assets");
 
 /**
  * Seed the bundled starter profiles into `defaultDir` (…/profiles/default),
