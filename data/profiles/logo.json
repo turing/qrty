@@ -7,6 +7,5 @@
   "image": "~/.qrty/assets/default/qrty-sample.jpeg",
   "imageOptions": { "imageSize": 0.28, "margin": 6, "hideBackgroundDots": true },
   "errorCorrectionLevel": "H",
-  "labelColor": "#000000",
-  "output": "./"
+  "labelColor": "#000000"
 }

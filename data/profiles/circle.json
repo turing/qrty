@@ -6,6 +6,5 @@
   "background": { "color": "#FFFFFF" },
   "shape": "circle",
   "margin": 20,
-  "labelColor": "#000000",
-  "output": "./"
+  "labelColor": "#000000"
 }

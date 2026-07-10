@@ -33,7 +33,7 @@ export function resolveOutputDir(
   flag: string | undefined,
   profile: Profile,
 ): string {
-  return expandHome(flag || profile.output || "./output/");
+  return expandHome(flag || profile.output || "./");
 }
 
 export interface GenerateOptions {

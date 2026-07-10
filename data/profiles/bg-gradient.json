@@ -14,6 +14,5 @@
     }
   },
   "margin": 16,
-  "labelColor": "#FFFFFF",
-  "output": "./"
+  "labelColor": "#FFFFFF"
 }

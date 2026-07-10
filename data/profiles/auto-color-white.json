@@ -4,5 +4,9 @@
   "cornersSquare": { "type": "extra-rounded", "color": "#000000" },
   "cornersDot": { "type": "dot", "color": "#000000" },
   "background": { "color": "#FFFFFF" },
-  "labelColor": "#000000"
+  "autoIcon": true,
+  "imageOptions": { "imageSize": 0.28, "margin": 6, "hideBackgroundDots": true },
+  "errorCorrectionLevel": "H",
+  "labelColor": "#000000",
+  "labelFont": "Open Sans"
 }

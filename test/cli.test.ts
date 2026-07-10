@@ -85,7 +85,7 @@ test("resolveOutputDir precedence: flag > profile > default", () => {
   const p = { output: "./prof" } as Profile;
   assert.equal(resolveOutputDir("/flag", p), "/flag");
   assert.equal(resolveOutputDir(undefined, p), "./prof");
-  assert.equal(resolveOutputDir(undefined, {} as Profile), "./output/");
+  assert.equal(resolveOutputDir(undefined, {} as Profile), "./");
 });
 
 test("expandHome expands a leading ~", () => {

@@ -4,6 +4,5 @@
   "cornersSquare": { "type": "extra-rounded", "color": "#000000" },
   "cornersDot": { "type": "dot", "color": "#000000" },
   "background": { "color": "transparent" },
-  "labelColor": "#000000",
-  "output": "./"
+  "labelColor": "#000000"
 }
