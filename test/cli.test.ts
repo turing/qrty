@@ -55,6 +55,12 @@ test("no arguments prints help and exits 0", async () => {
   assert.match(out, /Usage: qrty/);
 });
 
+test("--version prints the package version and exits 0", async () => {
+  const { code, out } = await captureRun(["--version"]);
+  assert.equal(code, 0);
+  assert.match(out, /^\d+\.\d+\.\d+/);
+});
+
 test("run 'icons' lists selections", async () => {
   const { code, out } = await captureRun(["icons"]);
   assert.equal(code, 0);

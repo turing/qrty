@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 
 import { Command, CommanderError } from "commander";
 
+import pkg from "../package.json" with { type: "json" };
+
 import { ensureProfilesDir } from "./bootstrap.ts";
 import { clearCache, defaultCacheDir } from "./cache.ts";
 import { QrtyError } from "./errors.ts";
@@ -141,6 +143,7 @@ export async function run(argv: string[]): Promise<number> {
   program
     .name("qrty")
     .description("Render a styled SVG (and optional PNG) QR code from a profile.")
+    .version(pkg.version, "-v, --version")
     .exitOverride()
     .allowExcessArguments(false);
 
