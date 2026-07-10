@@ -2,18 +2,24 @@
   "name": "qrty",
   "version": "2.0.0",
   "description": "Render styled SVG (and optional PNG) QR codes from named JSON style profiles.",
+  "keywords": ["qr", "qr-code", "cli", "svg", "png", "styling", "generator", "logo"],
+  "homepage": "https://github.com/turing/qrty#readme",
+  "repository": { "type": "git", "url": "git+https://github.com/turing/qrty.git" },
+  "bugs": { "url": "https://github.com/turing/qrty/issues" },
   "type": "module",
   "bin": {
-    "qrty": "src/cli.ts"
+    "qrty": "dist/cli.js"
   },
   "files": [
-    "src",
+    "dist",
     "data"
   ],
   "engines": {
     "node": ">=23.6.0"
   },
   "scripts": {
+    "build": "tsup",
+    "prepare": "tsup",
     "test": "node --test 'test/**/*.test.ts'",
     "typecheck": "tsc",
     "qrty": "node src/cli.ts",
@@ -34,6 +40,7 @@
   "devDependencies": {
     "@types/jsdom": "^21.1.7",
     "@types/node": "^22.0.0",
+    "tsup": "^8.5.1",
     "typescript": "^5.6.0"
   },
   "allowScripts": {
